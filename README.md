@@ -1,25 +1,11 @@
-# BILLSUTILSdotOS
-Simple ASM and C++ operating system for doing dank 420 weed.
+# BuenOS
+Simple, Collaborative, Real Mode, 16-bit OS based on the work of MikeOS
 
-Eey, this is a crappy README
-This is a work in progress, and most of the code (FAT12 buffer especially) is ripped straight from MikeOS
-
-....................../´¯/) 
-
-....................,/¯../ 
-
-.................../..../ 
-
-............./´¯/'...'/´¯¯`·¸ 
-
-........../'/.../..../......./¨¯\ 
-
-........('(...´...´.... ¯~/'...') 
-
-.........\.................'...../ 
-
-..........''...\.......... _.·´ 
-
-............\..............( 
-
-..............\.............\...
+This OS will have:
+	-VESA VBE Display Capability
+	-AC97 Audio Codec
+	-Homebrew Scripting
+	-Command Line Interface
+	-Object Oriented System API
+	-Mouse and Keyboard Support
+	-Possible TCP/IP stack
