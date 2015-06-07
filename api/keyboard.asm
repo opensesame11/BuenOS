@@ -6,20 +6,23 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; os_wait_for_key -- Waits for keypress and returns key
+; unsigned short waitKey() -- Waits for keypress and returns key
 ; IN: Nothing; OUT: AX = key pressed, other regs preserved
 
-os_wait_for_key:
+_waitKey:
+	push bp
+	mov bp, sp
 	pusha
 
 	mov ax, 0
-	mov ah, 10h			; BIOS call to wait for key
+	mov ah, 10h
 	int 16h
 
-	mov [.tmp_buf], ax		; Store resulting keypress
-
-	popa				; But restore all other regs
+	mov [.tmp_buf], ax
+	popa
 	mov ax, [.tmp_buf]
+	mov sp, bp
+	pop bp
 	ret
 
 
@@ -27,10 +30,11 @@ os_wait_for_key:
 
 
 ; ------------------------------------------------------------------
-; os_check_for_key -- Scans keyboard for input, but doesn't wait
-; IN: Nothing; OUT: AX = 0 if no key pressed, otherwise scan code
-
-os_check_for_key:
+; unsigned short getKey() -- Scans keyboard for input, but doesn't wait
+; Returns null if no keypress in buffer
+_getKey:
+	push bp
+	mov bp, sp
 	pusha
 
 	mov ax, 0
@@ -46,6 +50,8 @@ os_check_for_key:
 
 	popa				; But restore all other regs
 	mov ax, [.tmp_buf]
+	mov sp, bp
+	pop bp
 	ret
 
 .nokey:
