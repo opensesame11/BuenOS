@@ -6,45 +6,55 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; portWrite -- Send byte to a port
-; IN: DX = port address, AL = byte to send
-
+; void portWrite(short addr, short byte); -- Send byte to a port
 _portWrite:
+	push bp
+	mov bp, sp
 	pusha
-
+	
+	mov dx, [bp + 4]
+	mov ax, [bp + 6]
+	xor ah, ah
 	out dx, al
-
+	
 	popa
-	ret
+	mov si, bp
+	pop bp
+	ret 4
 
 
 ; ------------------------------------------------------------------
-; portRead -- Receive byte from a port
-; IN: DX = port address
-; OUT: AL = byte from port
+; unsigned short portRead(short addr) -- Receive byte from a port
 
 _portRead:
+	push bp
+	mov bp, sp
 	pusha
-
+	
+	mov dx, [bp + 4]
 	in al, dx
 	mov word [.tmp], ax
-
+	
 	popa
 	mov ax, [.tmp]
-	ret
-
-
+	mov si, bp
+	pop bp
+	ret 2
+	
 	.tmp dw 0
 
 
 ; ------------------------------------------------------------------
-; serialSetup -- Set up the serial port for transmitting data
-; IN: AX = 0 for normal mode (9600 baud), or 1 for slow mode (1200 baud)
+; void serialSetup(short mode) -- Set up the serial port for transmitting data
+; mode 0 = 9600bps, mode 1 = 1200bps
 
 _serialSetup:
+	push bp
+	mov bp, sp
 	pusha
 
 	mov dx, 0			; Configure serial port 1
+	mov ax, [bp + 4]
 	cmp ax, 1
 	je .slow_mode
 
@@ -60,51 +70,70 @@ _serialSetup:
 	int 14h
 
 	popa
-	ret
+	mov si, bp
+	pop bp
+	ret 2
 
 
 ; ------------------------------------------------------------------
-; serialWrite -- Send a byte via the serial port
-; IN: AL = byte to send via serial; OUT: AH = Bit 7 clear on success
+; unsigned short serialWrite(short byte) -- Send a byte via the serial port
+; Returns 1 if failure occurred
 
 _serialWrite:
+	push bp
+	mov bp, sp
 	pusha
 
 	mov ah, 01h
 	mov dx, 0			; COM1
 
 	int 14h
-
+	
+	xor ax, 0100000000000000b
+	cmp ax, 0100000000000000b
+	je .noSuccess
+	mov ax, 0
+	jmp .success
+.noSuccess:
+	mov ax, 1
+.success:
 	mov [.tmp], ax
-
 	popa
-
 	mov ax, [.tmp]
-
-	ret
-
-
+	ret 2
+	
 	.tmp dw 0
-
-
+	
+	
 ; ------------------------------------------------------------------
-; serialRead -- Get a byte from the serial port
-; OUT: AL = byte that was received; OUT: AH = Bit 7 clear on success
+; unsigned short serialRead() -- Get a byte from the serial port
+; returns FF00 on error.
 
 _serialRead:
+	push bp
+	mov bp, sp
 	pusha
-
+	
 	mov ah, 02h
 	mov dx, 0			; COM1
-
+	
 	int 14h
-
+	
+	xor ah, 01000000b
+	cmp ah, 01000000b
+	je .noSuccess
+	xor ah, ah
+	jmp .success
+.noSuccess:
+	mov ah, 11111111b
+	mov al, 00h
+.success:
 	mov [.tmp], ax
 
 	popa
-
 	mov ax, [.tmp]
-
+	mov sp, bp
+	pop bp
 	ret
 
 

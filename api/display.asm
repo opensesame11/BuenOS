@@ -77,7 +77,7 @@ _vgaSetCursor:
 	
 	
 ; ------------------------------------------------------------------
-; void vgaSetupCursor(short topLine, short bottomLine, short blink); - Move cursor to position
+; void vgaSetupCursor(short topLine, short bottomLine, short blink); - Change cursor style
 
 _vgaSetupCursor:
 	push bp
