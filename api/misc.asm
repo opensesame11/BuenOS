@@ -5,26 +5,27 @@
 ; MISCELLANEOUS ROUTINES
 ; ==================================================================
 
-global _getAPIVersion
-global _pause
-global _fatalError
-
 ; ------------------------------------------------------------------
-; _getAPIVersion -- Return current version of BILLSUTILSdotOS API
-; IN: Nothing; OUT: AL = API version number
+; unsigned short getAPIVersion() -- Return current version of BuenOS API
 
 _getAPIVersion:
+	push bp
+	mov bp, sp
 	mov al, API_VERSION
+	mov sp, bp
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; _pause -- Delay execution for specified 110ms chunks
-; IN: AX = 100 millisecond chunks to wait (max delay is 32767,
-;     which multiplied by 55ms = 1802 seconds = 30 minutes)
+; void pause(short time) -- Delay execution for specified 110ms chunks
+; time = 110 millisecond chunks to wait (max delay is 32767, which multiplied by 55ms = 1802 seconds = 30 minutes)
 
 _pause:
+	push bp
+	mov bp, sp
 	pusha
+	mov ax, [bp + 4]
 	cmp ax, 0
 	je .time_up			; If delay = 0 then bail out
 
@@ -53,7 +54,9 @@ _pause:
 
 .time_up:
 	popa
-	ret
+	mov sp, bp
+	pop bp
+	ret 2
 
 .up_date:
 	mov ax, [.counter_var]		; Inc counter_var
@@ -74,14 +77,15 @@ _pause:
 
 
 ; ------------------------------------------------------------------
-; _fatalError -- Display error message and halt execution
-; IN: AX = error message string location
+; void fatalError(short msgAddr) -- Display error message and halt execution
 
 _fatalError:
-	push ax
-	mov ax, 1
+	push bp
+	mov bp, sp
+	push 83h
 	call _vgaSetup
-	pop ax
+	mov ax, [bp + 4]
+	push ax
 	call _vgaPrintString
 	jmp $	;halt OS
 
