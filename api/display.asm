@@ -20,7 +20,7 @@ _vgaSetup:
 	ret 2
 
 ; ------------------------------------------------------------------
-; void vgaPrint(char character); - Print single character as teletype
+; void vgaPrint(short character); - Print single character as teletype
 
 _vgaPrint:
 	push bp

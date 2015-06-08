@@ -5,7 +5,12 @@
 
 disk_buffer equ 6000h
 
-vectorTable:
+global _vgaPrint
+global _vgaSetup
+extern _commandLine
+
+global _start
+_start:
 	jmp kernel
 	jmp _vgaSetup
 	jmp _vgaPrint
@@ -46,8 +51,8 @@ vectorTable:
 	jmp os_remove_file
 	jmp os_rename_file
 	jmp os_get_file_size
-	jmp os_wait_for_key
-	jmp os_check_for_key
+	jmp _waitKey
+	jmp _getKey
 	jmp os_seed_random
 	jmp os_get_random
 	jmp os_bcd_to_int
@@ -66,7 +71,6 @@ vectorTable:
 %include "api\string.asm" ;String manipulation lib
 %include "api\display.asm" ;Display configuration and output (WIP)
 %include "api\sound.asm" ;Sound configuration and output (WIP)
-%include "api\cli.asm" ;Command line interface (WIP)
 
 kernel:
 	cli
@@ -89,6 +93,12 @@ kernel:
 	push bootscreen
 	call _vgaPrintString
 	
+	push 25
+	call _pause ;pause for 25 * 110ms = 2750ms = 2.75s
+	
+	call _commandLine
+	
+.hang:
 	jmp $ ;Instruction to prevent system execution of system variables
 	
 ; ------------------------------------------------------------------
