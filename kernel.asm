@@ -82,25 +82,7 @@ kernel:
 	mov fs, ax
 	mov gs, ax
 	
-	mov ax, 1h
-	push ax
-	call _vgaSetup
-	
-	mov ax, bens_program
-	call os_file_exists
-	jnc wow
-	
-	mov cx, 0A000h
-	call os_load_file
-	call 0A00h:0000h
-	
-wow:
-	mov ax, bens_program
-	push ax
-	call _vgaPrintString
 	jmp $
-	
-bens_program db "CALC    BIN", 0
 	
 ; ------------------------------------------------------------------
 ; System Variables -- Storage for system wide information
