@@ -5,57 +5,57 @@
 
 disk_buffer equ 6000h
 
-vectorTable: ;Since main is called first, the other's don't actually execute
-	jmp kernel ;DO NOT INCLUDE IN API INCLUDE FILE
-	jmp _vgaSetup ;Display.asm
-	jmp _vgaPrintChar ;Display.asm
-	jmp _vgaPrintString ;Display.asm
-	jmp _vgaSetCursor ;Display.asm
-	jmp _pause ;Misc.asm
-	jmp _getAPIVersion ;Misc.asm
-	jmp _fatalError ;Misc.asm
-	jmp os_string_length ;String.asm
-	jmp os_string_reverse ;String.asm
-	jmp os_find_char_in_string ;String.asm
-	jmp os_string_charchange ;String.asm
-	jmp os_string_uppercase ;String.asm
-	jmp os_string_lowercase ;String.asm
-	jmp os_string_copy ;String.asm
-	jmp os_string_truncate ;String.asm
-	jmp os_string_join ;String.asm
-	jmp os_string_chomp ;String.asm
-	jmp os_string_strip ;String.asm
-	jmp os_string_compare ;String.asm
-	jmp os_string_strincmp ;String.asm
-	jmp os_string_parse ;String.asm
-	jmp os_string_to_int ;String.asm
-	jmp os_int_to_string ;String.asm
-	jmp os_sint_to_string ;String.asm
-	jmp os_long_int_to_string ;String.asm
-	jmp os_set_time_fmt ;String.asm
-	jmp os_get_time_string ;String.asm
-	jmp os_set_date_fmt ;String.asm
-	jmp os_get_date_string ;String.asm
-	jmp os_string_tokenize ;String.asm
-	jmp os_get_file_list ;Disk.asm
-	jmp os_load_file ;Disk.asm
-	jmp os_write_file ;Disk.asm
-	jmp os_file_exists ;Disk.asm
-	jmp os_create_file ;Disk.asm
-	jmp os_remove_file ;Disk.asm
-	jmp os_rename_file ;Disk.asm
-	jmp os_get_file_size ;Disk.asm
-	jmp os_wait_for_key ;Keyboard.asm
-	jmp os_check_for_key ;Keyboard.asm
-	jmp os_seed_random ;Math.asm
-	jmp os_get_random ;Math.asm
-	jmp os_bcd_to_int ;Math.asm
-	jmp os_long_int_negate ;Math.asm
-	jmp _portWrite ;Ports.asm
-	jmp _portRead ;Ports.asm
-	jmp _serialSetup ;Ports.asm
-	jmp _serialWrite ;Ports.asm
-	jmp _serialRead ;Ports.asm
+vectorTable:
+	jmp kernel
+	jmp _vgaSetup
+	jmp _vgaPrintChar
+	jmp _vgaPrintString
+	jmp _vgaSetCursor
+	jmp _pause
+	jmp _getAPIVersion
+	jmp _fatalError
+	jmp os_string_length
+	jmp os_string_reverse
+	jmp os_find_char_in_string
+	jmp os_string_charchange
+	jmp os_string_uppercase
+	jmp os_string_lowercase
+	jmp os_string_copy
+	jmp os_string_truncate
+	jmp os_string_join
+	jmp os_string_chomp
+	jmp os_string_strip
+	jmp os_string_compare
+	jmp os_string_strincmp
+	jmp os_string_parse
+	jmp os_string_to_int
+	jmp os_int_to_string
+	jmp os_sint_to_string
+	jmp os_long_int_to_string
+	jmp os_set_time_fmt
+	jmp os_get_time_string
+	jmp os_set_date_fmt
+	jmp os_get_date_string
+	jmp os_string_tokenize
+	jmp os_get_file_list
+	jmp os_load_file
+	jmp os_write_file
+	jmp os_file_exists
+	jmp os_create_file
+	jmp os_remove_file
+	jmp os_rename_file
+	jmp os_get_file_size
+	jmp os_wait_for_key
+	jmp os_check_for_key
+	jmp os_seed_random
+	jmp os_get_random
+	jmp os_bcd_to_int
+	jmp os_long_int_negate
+	jmp _portWrite
+	jmp _portRead
+	jmp _serialSetup
+	jmp _serialWrite
+	jmp _serialRead
 
 %include "api\disk.asm" ;Disk utilities
 %include "api\math.asm" ;Math functions
@@ -82,9 +82,38 @@ kernel:
 	mov fs, ax
 	mov gs, ax
 	
-	jmp $
+	mov ax, 0003h
+	int 10h
+	
+	mov si, bootscreen
+	mov ax, 01h
+.loop:
+	lodsb
+	cmp al, 0
+	je .done
+	mov ah, 0Eh
+	mov bh, 00h
+	mov bl, 10001111b
+	int 10h
+	jmp .loop
+	
+.done:
+	
+	;Calling a function properly
+	;
+	;push bp <- save frame pointer
+	;mov bp, sp <- move frame pointer to the stack
+	;push ARGUMENTS
+	;call FUNCTION
+	;add sp, SIZEOFARGUMENTS <- moves stack pointer to ignore the now useless arguments
+	;pop bp <- restores frame pointer
+	
+wow:
+	jmp wow
 	
 ; ------------------------------------------------------------------
 ; System Variables -- Storage for system wide information
 fmt_12_24 db 0
 fmt_date db 0, '/'
+
+bootscreen db "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# ", "|  .:;';;;;'#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+:.` `......,,:;:;;;,`| ", "#.;;;,....,'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+;:....,,,.  .,;+#### ", "|::::.  .'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#',` `..,::;::;:;,;+| ", "#;;,   ,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+:.``,.,;:..`.....```.,;:,,,:'# ", "|';` `'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+: `,';:,:;::;;;;;;': .` .,....,;''';| ", "#+;..:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: ,:....`.:;+#+@@@@@@@@@@ ``  `,.:.,;';'# ", "|;',,@@@@@@@@@@@@@@@@@@@@@@@@@@+;:    .,,::::;;;+@@@@@;'++';@@+, :,     `..,;'| ", "#'#::@@@@@@@@@@@@@',.`           @  `'''';:,....;@@@@@@'  `.,++. @@;       .`.# ", "|#@':@@@@@#. .;;:,,..``.....`  @@@@+ :+#+'::.::,  `'   .,;''': ;@@@@@@:     .:| ", "#+#::,  '@@+:,``..,::,,,,,'## @,@@@@@'  ;+#+'''';;;'#@@+,,;@@@@@@@@@@@@@+```.,# ", "|     ;@@@;...,:;;;;;:..,@@@@:.@@@@@@@@@@`    ``,;'++@@@@@@@@@@@@@@@@@@@@@,:'#| ", "#   `,.+@'..,,,,..,:. .,..;', @@@@@@@@@@@@@#+++++#@@@@@@@@@@@@@@@@@@@@@@@@@@@@# ", "|@   ,,,''....``       .:;, ,'#@@@@@@@@@@@@@@@+++#######@@@@@@@@@@@@@@@@@@@@:'| ", "#@#   .,,@..``  `:'@@',.;@@@@;,@#';'+#@#':;'+'''#@@##+++++++##@@@@@@@@@@@@@@''# ", "|@@@ `  `+;,;@@@+` `;#@@@@@#+;#@;,..,:;';'''+@@@@@@@@@@@@#+++###@@@@@@@@@@@@@:| ", "#@@++   '@@@@@#+###@@@@@@@@@#':..  `.:++#@@@@@@@@@@@@@@@@@@@#@@@@@@@@@@@@@@@@@# ", "|@''#'`.@@@@+++'+####@@@@##+++';@@#'+#@++#+'''';::;;''+@@@@@@@@@#@@@@@@@@@@@@@| ", "#;;;+'''@@@+;;'''+++#####+'';;+@@@@@',.. ____ @@@@@@@@@@@@@@@@@@ ____   _____ # ", "|@+@##+;@@;,,,::;;;'''';;;;;;+@#,`.,;'+ |  _ \                  / __ \ / ____|| ", "#@@@@@:';@',`..,,:::;:;;;;:,...,'##@@@@ | |_) |_   _  ___ _ __ | |  | | (___  # ", "|++++#;;,.+;,```..,:;;;';;;:,.,+@@@@@@@ |  _ <| | | |/ _ \ '_ \| |  | |\___ \ | ", "#'''+++..``+;,.```.,:;;;::;:,.,'+###### | |_) | |_| |  __/ | | | |__| |____) |# ", "| .:';'';,,`:'..`` `.,::,,,,..``.,:;+#@ |____/ \__,_|\___|_| |_|\____/|_____/ | ", "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#", 0
