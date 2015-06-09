@@ -6,10 +6,13 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; os_seed_random -- Seed the random number generator based on clock
-; IN: Nothing; OUT: Nothing (registers preserved)
+; void seedRandom() -- Seed the random number generator based on clock
 
-os_seed_random:
+_seedRandom:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	push bx
 	push ax
 
@@ -29,18 +32,21 @@ os_seed_random:
 					; were 44 minutes and 35 seconds after the hour)
 	pop ax
 	pop bx
+	pop si
+	pop di
+	pop bp
 	ret
 
 
-	os_random_seed	dw 0
+	.randomSeed	dw 0
 
 
 ; ------------------------------------------------------------------
-; os_get_random -- Return a random integer between low and high (inclusive)
+; unsigned int getRandom -- Return a random integer between low and high (inclusive)
 ; IN: AX = low integer, BX = high integer
 ; OUT: CX = random integer
 
-os_get_random:
+_getRandom:
 	push dx
 	push bx
 	push ax
@@ -63,10 +69,10 @@ os_get_random:
 	push dx
 	push bx
 
-	mov ax, [os_random_seed]
+	mov ax, [_seedRandom.randomSeed]
 	mov dx, 0x7383			; The magic number (random.org)
 	mul dx				; DX:AX = AX * DX
-	mov [os_random_seed], ax
+	mov [_seedRandom.randomSeed], ax
 
 	pop bx
  	pop dx
