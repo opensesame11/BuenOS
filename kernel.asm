@@ -8,9 +8,10 @@ disk_buffer equ 6000h
 vectorTable:
 	jmp kernel
 	jmp _vgaSetup
-	jmp _vgaPrintChar
+	jmp _vgaPrint
 	jmp _vgaPrintString
 	jmp _vgaSetCursor
+	jmp _vgaSetupCursor
 	jmp _pause
 	jmp _getAPIVersion
 	jmp _fatalError
@@ -82,34 +83,13 @@ kernel:
 	mov fs, ax
 	mov gs, ax
 	
-	mov ax, 0003h
-	int 10h
+	push 03h
+	call _vgaSetup
 	
-	mov si, bootscreen
-	mov ax, 01h
-.loop:
-	lodsb
-	cmp al, 0
-	je .done
-	mov ah, 0Eh
-	mov bh, 00h
-	mov bl, 10001111b
-	int 10h
-	jmp .loop
+	push bootscreen
+	call _vgaPrintString
 	
-.done:
-	
-	;Calling a function properly
-	;
-	;push bp <- save frame pointer
-	;mov bp, sp <- move frame pointer to the stack
-	;push ARGUMENTS
-	;call FUNCTION
-	;add sp, SIZEOFARGUMENTS <- moves stack pointer to ignore the now useless arguments
-	;pop bp <- restores frame pointer
-	
-wow:
-	jmp wow
+	jmp $ ;Instruction to prevent system execution of system variables
 	
 ; ------------------------------------------------------------------
 ; System Variables -- Storage for system wide information

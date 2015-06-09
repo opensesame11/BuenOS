@@ -5,70 +5,105 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; void vgaSetup(int retBuffer); -- Set display to standard VGA 80x25
-;								   text with no cursor and can clear
-;								   screen buffer.
+; void vgaSetup(short mode); - Sets up a basic 80x25 VGA display for fallback
 
 _vgaSetup:
-	pop ax
+	push bp
+	mov bp, sp
 	
-	cmp ax, 0000h
-	je .keepBuffer
-	mov ax, 0003h
-	jmp .clearBuffer
-.keepBuffer:
-	mov ax, 0083h
-.clearBuffer:
-	int 10h
-	mov ax, 0100h
-	mov cx, 2000h ;Invisible cursor
+	mov ax, [bp + 4]
+	mov ah, 00h
 	int 10h
 	
-	ret
+	mov sp, bp
+	pop bp
+	ret 2
 
 ; ------------------------------------------------------------------
-; void vgaPrintChar(int character); -- Print ASCII plaintext
+; void vgaPrint(char character); - Print single character as teletype
 
-_vgaPrintChar:
-	pop ax
+_vgaPrint:
+	push bp
+	mov bp, sp
 	
-	cmp ah, 0 ;if LSB of character is nonzero then scroll after print
-	je .noscroll
+	mov ax, [bp + 4]
 	mov ah, 0Eh
-	jmp .scroll
-.noscroll:
-	mov ah, 0Ah
-.scroll:
 	int 10h
 	
-	ret
-	
+	mov sp, bp
+	pop bp
+	ret 2
+
 ; ------------------------------------------------------------------
-; void vgaPrintString(int stringAddress); -- Print null terminated string
+; void vgaPrintString(short stringAddr); - Prints null-terminated string
 
 _vgaPrintString:
-	pop ax
+	push bp
+	mov bp, sp
+
+	mov si, [bp + 4]
 	
-	mov si, ax
-	mov ax, 01h
 .loop:
 	lodsb
 	cmp al, 0
 	je .done
-	call _vgaPrintChar
+	push ax
+	call _vgaPrint
 	jmp .loop
-	
 .done:
-	ret
+
+	mov sp, bp
+	pop bp
+	ret 2
 
 ; ------------------------------------------------------------------
-; void vgaSetCursor(int coordinates); -- Set cursor to a position
+; void vgaSetCursor(short x, short y); - Move cursor to position
 
 _vgaSetCursor:
-	pop dx
+	push bp
+	mov bp, sp
 	
+	mov ax, [bp + 6]
+	mov bx, [bp + 4]
+	mov dh, al
+	mov dl, bl
 	mov ah, 02h
 	mov bh, 00h
 	int 10h
 	
-	ret
+	mov sp, bp
+	pop bp
+	ret 4
+	
+	
+; ------------------------------------------------------------------
+; void vgaSetupCursor(short topLine, short bottomLine, short blink); - Move cursor to position
+
+_vgaSetupCursor:
+	push bp
+	mov bp, sp
+	pusha
+	
+	mov ax, [bp + 8] ;topLine
+	mov bx, [bp + 6] ;bottomLine
+	mov dx, [bp + 4] ;blink
+	
+	xor cx, cx ;set cx to 0
+	xor dx, 0000000000000011h ;eliminate all but two bits
+	shl dx, 13 ;move blink to bits 5 and 6 of high byte
+	or cx, dx
+	
+	xor bx, 0000000000001111b
+	or cx, dx
+	
+	xor ax, 0000000000001111b
+	shl ax, 8
+	or cx, ax
+	
+	mov ah, 01h
+	int 10h
+	
+	popa
+	mov sp, bp
+	pop bp
+	ret 6
