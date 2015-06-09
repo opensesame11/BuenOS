@@ -6,14 +6,16 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; os_string_length -- Return length of a string
-; IN: AX = string location
-; OUT AX = length (other regs preserved)
+; unsigned short getStringLength(unsigned short stringAddr) -- Return length of a string
 
-os_string_length:
+_getStringLength:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
-	mov bx, ax			; Move location of string to BX
+	mov bx, [bp+4]			; Move location of string to BX
 
 	mov cx, 0			; Counter
 
@@ -29,6 +31,9 @@ os_string_length:
 	mov word [.tmp_counter], cx	; Store count before restoring other registers
 	popa
 
+	pop si
+	pop di
+	pop bp
 	mov ax, [.tmp_counter]		; Put count back into AX before returning
 	ret
 
@@ -37,17 +42,23 @@ os_string_length:
 
 
 ; ------------------------------------------------------------------
-; os_string_reverse -- Reverse the characters in a string
-; IN: SI = string location
+; unsigned short reverseString(unsigned short stringAddr) -- Reverse the characters in a string
 
-os_string_reverse:
+_reverseString:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
+	mov si, bp+4
 	cmp byte [si], 0		; Don't attempt to reverse empty string
 	je .end
 
-	mov ax, si
+	push si
 	call os_string_length
+	inc sp
+	inc sp
 
 	mov di, si
 	add di, ax
@@ -68,16 +79,24 @@ os_string_reverse:
 
 .end:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_find_char_in_string -- Find location of character in a string
-; IN: SI = string location, AL = character to find
-; OUT: AX = location in string, or 0 if char not present
+; unsigned short findCharInString(unsigned short stringAddr, unsignedShort char) -- Find location of character in a string
 
-os_find_char_in_string:
+_findCharInString:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov si, [bp+6]
+	mov ax, [bp+4]
 
 	mov cx, 1			; Counter -- start at first char (we count
 					; from 1 in chars here, so that we can
@@ -96,11 +115,17 @@ os_find_char_in_string:
 	mov [.tmp], cx
 	popa
 	mov ax, [.tmp]
+	pop si
+	pop di
+	pop bp
 	ret
 
 .notfound:
 	popa
 	mov ax, 0
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -108,11 +133,19 @@ os_find_char_in_string:
 
 
 ; ------------------------------------------------------------------
-; os_string_charchange -- Change instances of character in a string
+; void stringFindAndReplace(unsigned short stringAddr, unsigned short charToFind, unsignedShort charToUse) -- Change instances of character in a string
 ; IN: SI = string, AL = char to find, BL = char to replace with
 
-os_string_charchange:
+_stringFindAndReplace:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov si, [bp+8]
+	mov ax, [bp+6]
+	mov bx, [bp+4]
 
 	mov cl, al
 
@@ -131,17 +164,23 @@ os_string_charchange:
 
 .finish:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_uppercase -- Convert zero-terminated string to upper case
-; IN/OUT: AX = string location
+; void stringUppercase(unsigned short stringAddr) -- Convert zero-terminated string to upper case
 
-os_string_uppercase:
+_stringUppercase:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
-	mov si, ax			; Use SI to access string
+	mov si, [bp+4]			; Use SI to access string
 
 .more:
 	cmp byte [si], 0		; Zero-termination of string?
@@ -163,17 +202,23 @@ os_string_uppercase:
 
 .done:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_lowercase -- Convert zero-terminated string to lower case
-; IN/OUT: AX = string location
+; void stringLowercase(unsigned short stringAddr) -- Convert zero-terminated string to lower case
 
-os_string_lowercase:
+_stringLowercase:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
-	mov si, ax			; Use SI to access string
+	mov si, [bp+4]			; Use SI to access string
 
 .more:
 	cmp byte [si], 0		; Zero-termination of string?
@@ -195,15 +240,24 @@ os_string_lowercase:
 
 .done:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_copy -- Copy one string into another
-; IN/OUT: SI = source, DI = destination (programmer ensure sufficient room)
+; void stringCopy(unsigned short sourceAddr, unsigned short destAddr) -- Copy one string into another
 
-os_string_copy:
+_stringCopy:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov si, [bp+6]
+	mov di, [bp+4]
 
 .more:
 	mov al, [si]			; Transfer contents (at least one byte terminator)
@@ -215,53 +269,86 @@ os_string_copy:
 
 .done:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_truncate -- Chop string down to specified number of characters
-; IN: SI = string location, AX = number of characters
-; OUT: String modified, registers preserved
+; void stringTrunctuate(unsigned short stringAddr, unsigned short length) -- Chop string down to specified number of characters
 
-os_string_truncate:
+_stringTrunctuate:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov si, [bp+6]
+	mov ax, [bp+4]
 
 	add si, ax
 	mov byte [si], 0
 
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_join -- Join two strings into a third string
-; IN/OUT: AX = string one, BX = string two, CX = destination string
+; void stringJoin(unsigned short stringAddrOne, unsigned short stringAddrTwo, unsigned short StringAddrThree) -- Join two strings into a third string
 
-os_string_join:
+_stringJoin:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
-	mov si, ax			; Put first string into CX
-	mov di, cx
-	call os_string_copy
+	mov ax, [bp+8]
+	mov bx, [bp+6]
+	mov cx, [bp+4]
 
+	push cx
+	push ax
+	call os_string_copy
+	inc sp
+	inc sp
+
+	push ax
 	call os_string_length		; Get length of first string
+	inc sp
+	inc sp
 
 	add cx, ax			; Position at end of first string
 
-	mov si, bx			; Add second string onto it
-	mov di, cx
+	push cx
+	push bx
 	call os_string_copy
+	inc sp
+	inc sp
 
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_chomp -- Strip leading and trailing spaces from a string
-; IN: AX = string location
+; void stringChomp(unsigned short stringAddr) -- Strip leading and trailing spaces from a string
 
-os_string_chomp:
+_stringChomp:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov ax, [bp+4]
 
 	mov dx, ax			; Save string location
 
@@ -310,15 +397,24 @@ os_string_chomp:
 
 .done:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_string_strip -- Removes specified character from a string (max 255 chars)
-; IN: SI = string location, AL = character to remove
+; void _stringStrip(unsigned short stringAddr, unsigned short charToRemove) -- Removes specified character from a string (max 255 chars)
 
-os_string_strip:
+_stringStrip:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov si, [bp+6]
+	mov ax, [bp+4]
 
 	mov di, si
 
@@ -337,90 +433,68 @@ os_string_strip:
 
 .finish:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 ; ------------------------------------------------------------------
-; os_string_compare -- See if two strings match
-; IN: SI = string one, DI = string two
-; OUT: carry set if same, clear if different
+; unsigned short stringEqual(unsigned short stringAddrOne, unsigned short stringAddrTwo) -- See if two strings match
 
-os_string_compare:
-	pusha
-
-.more:
-	mov al, [si]			; Retrieve string contents
-	mov bl, [di]
-
-	cmp al, bl			; Compare characters at current location
-	jne .not_same
-
-	cmp al, 0			; End of first string? Must also be end of second
-	je .terminated
-
-	inc si
-	inc di
-	jmp .more
-
-
-.not_same:				; If unequal lengths with same beginning, the byte
-	popa				; comparison fails at shortest string terminator
-	clc				; Clear carry flag
-	ret
-
-
-.terminated:				; Both strings terminated at the same position
-	popa
-	stc				; Set carry flag
-	ret
-
-
-; ------------------------------------------------------------------
-; os_string_strincmp -- See if two strings match up to set number of chars
-; IN: SI = string one, DI = string two, CL = chars to check
-; OUT: carry set if same, clear if different
-
-os_string_strincmp:
-	pusha
-
-.more:
-	mov al, [si]			; Retrieve string contents
-	mov bl, [di]
-
-	cmp al, bl			; Compare characters at current location
-	jne .not_same
-
-	cmp al, 0			; End of first string? Must also be end of second
-	je .terminated
-
-	inc si
-	inc di
-
-	dec cl				; If we've lasted through our char count
-	cmp cl, 0			; Then the bits of the string match!
-	je .terminated
-
-	jmp .more
-
-
-.not_same:				; If unequal lengths with same beginning, the byte
-	popa				; comparison fails at shortest string terminator
-	clc				; Clear carry flag
-	ret
-
-
-.terminated:				; Both strings terminated at the same position
-	popa
-	stc				; Set carry flag
-	ret
-
-
-; ------------------------------------------------------------------
-; os_string_parse -- Take string (eg "run foo bar baz") and return
-; pointers to zero-terminated strings (eg AX = "run", BX = "foo" etc.)
-; IN: SI = string; OUT: AX, BX, CX, DX = individual strings
-
-os_string_parse:
+_stringEqual:
+	push bp
+	mov bp, sp
+	push di
 	push si
+	pusha
+
+	mov si, [bp+6]
+	mov di, [bp+4]
+
+.more:
+	mov al, [si]			; Retrieve string contents
+	mov bl, [di]
+
+	cmp al, bl			; Compare characters at current location
+	jne .not_same
+
+	cmp al, 0			; End of first string? Must also be end of second
+	je .terminated
+
+	inc si
+	inc di
+	jmp .more
+
+
+.not_same:				; If unequal lengths with same beginning, the byte
+	popa				; comparison fails at shortest string terminator
+	pop si
+	pop di
+	pop bp
+	mov ax, 0
+	ret
+
+
+.terminated:				; Both strings terminated at the same position
+	popa
+	pop si
+	pop di
+	pop bp
+	mov ax, 1
+	ret
+
+
+; ------------------------------------------------------------------
+; unsigned short stringParse(unsigned short stringAddr) -- Take string (eg "run foo bar baz") and parses different elements into seperate strings. Max 4 elements
+; ax = stringAddrOne; ax+1 = stringAddrTwo; etc.
+
+_stringParse:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov si, [bp+4]
 
 	mov ax, si			; AX = start of first string
 
@@ -468,21 +542,38 @@ os_string_parse:
 
 .finish:
 	pop ax
+	mov [.elementLocations], ax
+	mov [.elementLocations+1], bx
+	mov [.elementLocations+2], cx
+	mov [.elementLocations+3], dx
 
+	mov ax, .elementLocations
 	pop si
+	pop di
+	pop bp
 	ret
 
+.elementLocations:	dw 0
+			dw 0
+			dw 0
+			dw 0
 
 ; ------------------------------------------------------------------
-; os_string_to_int -- Convert decimal string to integer value
-; IN: SI = string location (max 5 chars, up to '65536')
-; OUT: AX = number
+; unsigned short stringToShort(unsigned short stringToConvert) -- Convert decimal string to integer value
 
-os_string_to_int:
+_stringToShort:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
-	mov ax, si			; First, get length of string
+	mov si, [bp+4]
+
+	push si
 	call os_string_length
+	inc sp
+	inc sp
 
 	add si, ax			; Work from rightmost char in string
 	dec si
@@ -527,6 +618,10 @@ os_string_to_int:
 	popa
 	mov word ax, [.tmp]
 
+	pop si
+	pop di
+	pop bp
+
 	ret
 
 
@@ -535,12 +630,16 @@ os_string_to_int:
 
 
 ; ------------------------------------------------------------------
-; os_int_to_string -- Convert unsigned integer to string
-; IN: AX = signed int
-; OUT: AX = string location
+; unsigned short shortToString(unsigned short value) -- Convert unsigned integer to string
 
-os_int_to_string:
+_shortToString:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov ax, [bp+4]
 
 	mov cx, 0
 	mov bx, 10			; Set BX 10, for division and mod
@@ -565,6 +664,9 @@ os_int_to_string:
 
 	popa
 	mov ax, .t			; Return location of string
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -572,12 +674,16 @@ os_int_to_string:
 
 
 ; ------------------------------------------------------------------
-; os_sint_to_string -- Convert signed integer to string
-; IN: AX = signed int
-; OUT: AX = string location
+; unsigned short sShortToString(signed short value) -- Convert signed integer to string
 
-os_sint_to_string:
+sShortToString:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov ax, [bp+4]
 
 	mov cx, 0
 	mov bx, 10			; Set BX 10, for division and mod
@@ -609,6 +715,10 @@ os_sint_to_string:
 
 	popa
 	mov ax, .t			; Return location of string
+
+	push si
+	push di
+	push bp
 	ret
 
 
@@ -616,96 +726,39 @@ os_sint_to_string:
 
 
 ; ------------------------------------------------------------------
-; os_long_int_to_string -- Convert value in DX:AX to string
-; IN: DX:AX = long unsigned integer, BX = number base, DI = string location
-; OUT: DI = location of converted string
-
-os_long_int_to_string:
-	pusha
-
-	mov si, di			; Prepare for later data movement
-
-	mov word [di], 0		; Terminate string, creates 'null'
-
-	cmp bx, 37			; Base > 37 or < 0 not supported, return null
-	ja .done
-
-	cmp bx, 0			; Base = 0 produces overflow, return null
-	je .done
-
-.conversion_loop:
-	mov cx, 0			; Zero extend unsigned integer, number = CX:DX:AX
-					; If number = 0, goes through loop once and stores '0'
-
-	xchg ax, cx			; Number order DX:AX:CX for high order division
-	xchg ax, dx
-	div bx				; AX = high quotient, DX = high remainder
-
-	xchg ax, cx			; Number order for low order division
-	div bx				; CX = high quotient, AX = low quotient, DX = remainder
-	xchg cx, dx			; CX = digit to send
-
-.save_digit:
-	cmp cx, 9			; Eliminate punctuation between '9' and 'A'
-	jle .convert_digit
-
-	add cx, 'A'-'9'-1
-
-.convert_digit:
-	add cx, '0'			; Convert to ASCII
-
-	push ax				; Load this ASCII digit into the beginning of the string
-	push bx
-	mov ax, si
-	call os_string_length		; AX = length of string, less terminator
-	mov di, si
-	add di, ax			; DI = end of string
-	inc ax				; AX = nunber of characters to move, including terminator
-
-.move_string_up:
-	mov bl, [di]			; Put digits in correct order
-	mov [di+1], bl
-	dec di
-	dec ax
-	jnz .move_string_up
-
-	pop bx
-	pop ax
-	mov [si], cl			; Last digit (LSD) will print first (on left)
-
-.test_end:
-	mov cx, dx			; DX = high word, again
-	or cx, ax			; Nothing left?
-	jnz .conversion_loop
-
-.done:
-	popa
-	ret
-
-
-; ------------------------------------------------------------------
-; os_set_time_fmt -- Set time reporting format (eg '10:25 AM' or '2300 hours')
+; void setTimeFMT(unsigned short format) -- Set time reporting format (eg '10:25 AM' or '2300 hours')
 ; IN: AL = format flag, 0 = 12-hr format
 
-os_set_time_fmt:
+_setTimeFMT:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
 	cmp al, 0
 	je .store
 	mov al, 0FFh
 .store:
 	mov [fmt_12_24], al
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_get_time_string -- Get current time in a string (eg '10:25')
-; IN/OUT: BX = string location
+; unsigned short getTimeString() -- Get current time in a string (eg '10:25')
 
-os_get_time_string:
+_getTimeString:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
 
-	mov di, bx			; Location to place time string
+	mov di, .fullTimeString		; Location to place time string
 
 	clc				; For buggy BIOSes
 	mov ah, 2			; Get time data from BIOS in BCD format
@@ -718,7 +771,11 @@ os_get_time_string:
 
 .read:
 	mov al, ch			; Convert hours to integer for AM/PM test
+	xor ah, ah
+	push ax
 	call os_bcd_to_int
+	inc sp
+	inc sp
 	mov dx, ax			; Save
 
 	mov al,	ch			; Hour
@@ -794,7 +851,7 @@ os_get_time_string:
 	jne .copy
 
 	popa
-	ret
+	jmp .end
 
 
 .add_digit:
@@ -802,20 +859,31 @@ os_get_time_string:
 	stosb				; Put into string buffer
 	ret
 
+.end:
+	pop si
+	pop di
+	pop bp
+	mov ax, .fullTimeString
+	ret
 
 	.hours_string	db 'hours', 0
 	.am_string 	db 'AM', 0
 	.pm_string 	db 'PM', 0
+	.fullTimeString times 11 db 0
 
 
 ; ------------------------------------------------------------------
-; os_set_date_fmt -- Set date reporting format (M/D/Y, D/M/Y or Y/M/D - 0, 1, 2)
+; setDateFMT() -- Set date reporting format (M/D/Y, D/M/Y or Y/M/D - 0, 1, 2)
 ; IN: AX = format flag, 0-2
 ; If AX bit 7 = 1 = use name for months
 ; If AX bit 7 = 0, high byte = separator character
 
-os_set_date_fmt:
-	pusha
+_setDateFMT:
+	push bp
+	mov bp, sp
+	push di
+	push si
+	pusha;you were here last you sdiry goatfucker
 	test al, 80h			; ASCII months (bit 7)?
 	jnz .fmt_clear
 

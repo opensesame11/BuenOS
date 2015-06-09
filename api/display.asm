@@ -10,14 +10,17 @@
 _vgaSetup:
 	push bp
 	mov bp, sp
-	
-	mov ax, [bp + 4]
+	push di
+	push si
+
+	mov ax, [bp+4]
 	mov ah, 00h
 	int 10h
-	
-	mov sp, bp
+
+	pop si
+	pop di
 	pop bp
-	ret 2
+	ret
 
 ; ------------------------------------------------------------------
 ; void vgaPrint(short character); - Print single character as teletype
@@ -25,14 +28,17 @@ _vgaSetup:
 _vgaPrint:
 	push bp
 	mov bp, sp
-	
-	mov ax, [bp + 4]
+	push di
+	push si
+
+	mov ax, [bp+4]
 	mov ah, 0Eh
 	int 10h
-	
-	mov sp, bp
-	pop bp
-	ret 2
+
+        pop si
+        pop di
+        pop bp
+	ret
 
 ; ------------------------------------------------------------------
 ; void vgaPrintString(short stringAddr); - Prints null-terminated string
@@ -40,21 +46,25 @@ _vgaPrint:
 _vgaPrintString:
 	push bp
 	mov bp, sp
+	push di
+	push si
 
-	mov si, [bp + 4]
-	
+	mov si, [bp+4]
+
 .loop:
 	lodsb
 	cmp al, 0
 	je .done
 	push ax
 	call _vgaPrint
+	inc sp
+	inc sp
 	jmp .loop
 .done:
-
-	mov sp, bp
+	pop si
+	pop di
 	pop bp
-	ret 2
+	ret
 
 ; ------------------------------------------------------------------
 ; void vgaSetCursor(short x, short y); - Move cursor to position
@@ -62,48 +72,54 @@ _vgaPrintString:
 _vgaSetCursor:
 	push bp
 	mov bp, sp
-	
-	mov ax, [bp + 6]
-	mov bx, [bp + 4]
+	push di
+	push si
+
+	mov ax, [bp+6]
+	mov bx, [bp+4]
 	mov dh, al
 	mov dl, bl
 	mov ah, 02h
 	mov bh, 00h
 	int 10h
-	
-	mov sp, bp
+
+	pop si
+	pop di
 	pop bp
-	ret 4
-	
-	
+	ret
+
+
 ; ------------------------------------------------------------------
 ; void vgaSetupCursor(short topLine, short bottomLine, short blink); - Change cursor style
 
 _vgaSetupCursor:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
-	
-	mov ax, [bp + 8] ;topLine
-	mov bx, [bp + 6] ;bottomLine
-	mov dx, [bp + 4] ;blink
-	
+
+	mov ax, [bp+8]
+	mov bx, [bp+6]
+	mov dx, [bp+4]
+
 	xor cx, cx ;set cx to 0
 	xor dx, 0000000000000011h ;eliminate all but two bits
 	shl dx, 13 ;move blink to bits 5 and 6 of high byte
 	or cx, dx
-	
+
 	xor bx, 0000000000001111b
 	or cx, dx
-	
+
 	xor ax, 0000000000001111b
 	shl ax, 8
 	or cx, ax
-	
+
 	mov ah, 01h
 	int 10h
-	
+
 	popa
-	mov sp, bp
+	pop si
+	pop di
 	pop bp
-	ret 6
+	ret

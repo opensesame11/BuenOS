@@ -7,11 +7,8 @@
 
 ; ------------------------------------------------------------------
 ; unsigned short waitKey() -- Waits for keypress and returns key
-; IN: Nothing; OUT: AX = key pressed, other regs preserved
 
 _waitKey:
-	push bp
-	mov bp, sp
 	pusha
 
 	mov ax, 0
@@ -21,8 +18,6 @@ _waitKey:
 	mov [.tmp_buf], ax
 	popa
 	mov ax, [.tmp_buf]
-	mov sp, bp
-	pop bp
 	ret
 
 
@@ -32,9 +27,8 @@ _waitKey:
 ; ------------------------------------------------------------------
 ; unsigned short getKey() -- Scans keyboard for input, but doesn't wait
 ; Returns null if no keypress in buffer
+
 _getKey:
-	push bp
-	mov bp, sp
 	pusha
 
 	mov ax, 0
@@ -50,8 +44,6 @@ _getKey:
 
 	popa				; But restore all other regs
 	mov ax, [.tmp_buf]
-	mov sp, bp
-	pop bp
 	ret
 
 .nokey:

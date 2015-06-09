@@ -11,8 +11,12 @@
 _getAPIVersion:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	mov al, API_VERSION
-	mov sp, bp
+
+	pop si
+	pop di
 	pop bp
 	ret
 
@@ -24,8 +28,10 @@ _getAPIVersion:
 _pause:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
-	mov ax, [bp + 4]
+	mov ax, [bp+4]
 	cmp ax, 0
 	je .time_up			; If delay = 0 then bail out
 
@@ -35,11 +41,11 @@ _pause:
 	mov bx, ax
 	mov ax, 0
 	mov al, 2			; 2 * 55ms = 110mS
-	mul bx				; Multiply by number of 110ms chunks required 
+	mul bx				; Multiply by number of 110ms chunks required
 	mov [.orig_req_delay], ax	; Save it
 
 	mov ah, 0
-	int 1Ah				; Get tick count	
+	int 1Ah				; Get tick count
 
 	mov [.prev_tick_count], dx	; Save it for later comparison
 
@@ -54,9 +60,10 @@ _pause:
 
 .time_up:
 	popa
-	mov sp, bp
+	pop si
+	pop di
 	pop bp
-	ret 2
+	ret
 
 .up_date:
 	mov ax, [.counter_var]		; Inc counter_var
@@ -66,7 +73,7 @@ _pause:
 	cmp ax, [.orig_req_delay]	; Is counter_var = required delay?
 	jge .time_up			; Yes, so bail out
 
-	mov [.prev_tick_count], dx	; No, so update .prev_tick_count 
+	mov [.prev_tick_count], dx	; No, so update .prev_tick_count
 
 	jmp .checkloop			; And go wait some more
 
@@ -82,13 +89,17 @@ _pause:
 _fatalError:
 	push bp
 	mov bp, sp
+	push di
+	push si
+
 	push 83h
 	call _vgaSetup
-	mov ax, [bp + 4]
+	inc sp
+	inc sp
+	mov ax, [bp+4]
 	push ax
 	call _vgaPrintString
+	inc sp
+	inc sp
 	jmp $	;halt OS
-
-
-; ==================================================================
 

@@ -10,17 +10,20 @@
 _portWrite:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
-	
-	mov dx, [bp + 4]
-	mov ax, [bp + 6]
+
+	mov dx, [bp+4]
+	mov ax, [bp+6]
 	xor ah, ah
 	out dx, al
-	
+
 	popa
-	mov si, bp
+	pop si
+	pop di
 	pop bp
-	ret 4
+	ret
 
 
 ; ------------------------------------------------------------------
@@ -29,18 +32,21 @@ _portWrite:
 _portRead:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
-	
-	mov dx, [bp + 4]
+
+	mov dx, [bp+4]
 	in al, dx
 	mov word [.tmp], ax
-	
+
 	popa
 	mov ax, [.tmp]
-	mov si, bp
+	pop si
+	pop di
 	pop bp
-	ret 2
-	
+	ret
+
 	.tmp dw 0
 
 
@@ -51,10 +57,12 @@ _portRead:
 _serialSetup:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
 
 	mov dx, 0			; Configure serial port 1
-	mov ax, [bp + 4]
+	mov ax, [bp+4]
 	cmp ax, 1
 	je .slow_mode
 
@@ -64,15 +72,16 @@ _serialSetup:
 
 .slow_mode:
 	mov ah, 0
-	mov al, 10000011b		; 1200 baud, no parity, 8 data bits, 1 stop bit	
+	mov al, 10000011b		; 1200 baud, no parity, 8 data bits, 1 stop bit
 
 .finish:
 	int 14h
 
 	popa
-	mov si, bp
+	pop si
+	pop di
 	pop bp
-	ret 2
+	ret
 
 
 ; ------------------------------------------------------------------
@@ -82,13 +91,17 @@ _serialSetup:
 _serialWrite:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
 
+	mov ax, [bp+4]
+
 	mov ah, 01h
-	mov dx, 0			; COM1
+	mov dx, 0
 
 	int 14h
-	
+
 	xor ax, 0100000000000000b
 	cmp ax, 0100000000000000b
 	je .noSuccess
@@ -100,11 +113,15 @@ _serialWrite:
 	mov [.tmp], ax
 	popa
 	mov ax, [.tmp]
-	ret 2
-	
+
+	pop si
+	pop di
+	pop bp
+	ret
+
 	.tmp dw 0
-	
-	
+
+
 ; ------------------------------------------------------------------
 ; unsigned short serialRead() -- Get a byte from the serial port
 ; returns FF00 on error.
@@ -112,13 +129,15 @@ _serialWrite:
 _serialRead:
 	push bp
 	mov bp, sp
+	push di
+	push si
 	pusha
-	
+
 	mov ah, 02h
-	mov dx, 0			; COM1
-	
+	mov dx, 0
+
 	int 14h
-	
+
 	xor ah, 01000000b
 	cmp ah, 01000000b
 	je .noSuccess
@@ -132,13 +151,10 @@ _serialRead:
 
 	popa
 	mov ax, [.tmp]
-	mov sp, bp
+	pop si
+	pop di
 	pop bp
 	ret
 
 
 	.tmp dw 0
-
-
-; ==================================================================
-
