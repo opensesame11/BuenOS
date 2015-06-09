@@ -6,10 +6,13 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; os_seed_random -- Seed the random number generator based on clock
-; IN: Nothing; OUT: Nothing (registers preserved)
+; void seedRandom() -- Seed the random number generator based on clock
 
-os_seed_random:
+_seedRandom:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	push bx
 	push ax
 
@@ -29,18 +32,27 @@ os_seed_random:
 					; were 44 minutes and 35 seconds after the hour)
 	pop ax
 	pop bx
+	pop si
+	pop di
+	pop bp
 	ret
 
 
-	os_random_seed	dw 0
+	.randomSeed	dw 0
 
 
 ; ------------------------------------------------------------------
-; os_get_random -- Return a random integer between low and high (inclusive)
-; IN: AX = low integer, BX = high integer
-; OUT: CX = random integer
+; unsigned short getRandom(unsigned short min, unsigned short max) -- Returns a pointer to a random integer between low and high (inclusive)
 
-os_get_random:
+_getRandom:
+	push bp
+	mov bp, sp
+	push di
+	push si
+	
+	mov ax, [bp+6]
+	mov bx, [bp+4]
+	
 	push dx
 	push bx
 	push ax
@@ -56,6 +68,14 @@ os_get_random:
 	pop bx
 	pop dx
 	add cx, ax			; Add the low offset back
+	
+	mov [.MSB], bx
+	mov [.LSB], ax
+	
+	mov ax, dx
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -63,21 +83,30 @@ os_get_random:
 	push dx
 	push bx
 
-	mov ax, [os_random_seed]
+	mov ax, [_seedRandom.randomSeed]
 	mov dx, 0x7383			; The magic number (random.org)
 	mul dx				; DX:AX = AX * DX
-	mov [os_random_seed], ax
+	mov [_seedRandom.randomSeed], ax
 
 	pop bx
  	pop dx
 	ret
+	
+	.MSB dw 0
+	.LSB dw 0
 
 
 ; ------------------------------------------------------------------
-; os_bcd_to_int -- Converts binary coded decimal number to an integer
-; IN: AL = BCD number; OUT: AX = integer value
+; void bcdToInt(unsigned short number)-- Converts binary coded decimal number to an integer
 
-os_bcd_to_int:
+_bcdToInt:
+	push bp
+	mov bp, sp
+	push di
+	push si
+	
+	mov ax, [bp+4]
+	
 	pusha
 
 	mov bl, al			; Store entire number for now
@@ -94,22 +123,14 @@ os_bcd_to_int:
 
 	popa
 	mov ax, [.tmp]			; And return it in AX!
+	
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 	.tmp	dw 0
-
-
-; ------------------------------------------------------------------
-; os_long_int_negate -- Multiply value in DX:AX by -1
-; IN: DX:AX = long integer; OUT: DX:AX = -(initial DX:AX)
-
-os_long_int_negate:
-	neg ax
-	adc dx, 0
-	neg dx
-	ret
-
 
 ; ==================================================================
 

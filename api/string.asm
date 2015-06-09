@@ -56,7 +56,7 @@ _reverseString:
 	je .end
 
 	push si
-	call os_string_length
+	call _getStringLength
 	inc sp
 	inc sp
 
@@ -314,12 +314,12 @@ _stringJoin:
 
 	push cx
 	push ax
-	call os_string_copy
+	call _stringCopy
 	inc sp
 	inc sp
 
 	push ax
-	call os_string_length		; Get length of first string
+	call _getStringLength		; Get length of first string
 	inc sp
 	inc sp
 
@@ -327,7 +327,7 @@ _stringJoin:
 
 	push cx
 	push bx
-	call os_string_copy
+	call _stringCopy
 	inc sp
 	inc sp
 
@@ -379,9 +379,11 @@ _stringChomp:
 	jmp .keep_copying
 
 .finished_copy:
-	mov ax, dx			; AX = original string start
-
-	call os_string_length
+	push dx
+	call _getStringLength
+	inc sp
+	inc sp
+	
 	cmp ax, 0			; If empty or all blank, done, return 'null'
 	je .done
 
@@ -571,7 +573,7 @@ _stringToShort:
 	mov si, [bp+4]
 
 	push si
-	call os_string_length
+	call _getStringLength
 	inc sp
 	inc sp
 
@@ -773,7 +775,7 @@ _getTimeString:
 	mov al, ch			; Convert hours to integer for AM/PM test
 	xor ah, ah
 	push ax
-	call os_bcd_to_int
+	call _bcdToInt
 	inc sp
 	inc sp
 	mov dx, ax			; Save
@@ -873,17 +875,19 @@ _getTimeString:
 
 
 ; ------------------------------------------------------------------
-; setDateFMT() -- Set date reporting format (M/D/Y, D/M/Y or Y/M/D - 0, 1, 2)
-; IN: AX = format flag, 0-2
-; If AX bit 7 = 1 = use name for months
-; If AX bit 7 = 0, high byte = separator character
+; void setDateFMT(unsigned short format) -- Set date reporting format (M/D/Y, D/M/Y or Y/M/D - 0, 1, 2)
+; If format bit 7 = 1 = use name for months
+; If format bit 7 = 0, high byte = separator character
 
 _setDateFMT:
 	push bp
 	mov bp, sp
 	push di
 	push si
-	pusha;you were here last you sdiry goatfucker
+	pusha
+	
+	mov ax, [bp+4]
+	
 	test al, 80h			; ASCII months (bit 7)?
 	jnz .fmt_clear
 
@@ -900,15 +904,24 @@ _setDateFMT:
 
 .leave:
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; ------------------------------------------------------------------
-; os_get_date_string -- Get current date in a string (eg '12/31/2007')
+; unsigned short getDateString() -- Get current date in a string (eg '12/31/2007')
 ; IN/OUT: BX = string location
 
-os_get_date_string:
+_getDateString:
+	push bp
+	mov bp, sp
+	push di
+	push si
 	pusha
+
+	mov bx, .fullDateString
 
 	mov di, bx			; Store string location for now
 	mov bx, [fmt_date]		; BL = format code
@@ -1033,7 +1046,13 @@ os_get_date_string:
 	stosw
 
 	popa
+	mov ax, .fullDateString
+	pop si
+	pop di
+	pop bp
 	ret
+
+	.fullDateString times 11 db 0
 
 
 .add_1or2digits:
@@ -1066,7 +1085,7 @@ os_get_date_string:
 	push bx
 	push cx
 	mov al, ah			; Convert month to integer to index print table
-	call os_bcd_to_int
+	call _bcdToInt
 	dec al				; January = 0
 	mov bl, 4			; Multiply month by 4 characters/month
 	mul bl
@@ -1087,11 +1106,18 @@ os_get_date_string:
 
 
 ; ------------------------------------------------------------------
-; os_string_tokenize -- Reads tokens separated by specified char from
+; unsigned short stringFindToken(unsigned short stringAddr, unsigned short character) -- Reads tokens separated by specified char from
 ; a string. Returns pointer to next token, or 0 if none left
-; IN: AL = separator char, SI = beginning; OUT: DI = next token or 0 if none
 
-os_string_tokenize:
+_stringFindToken:
+	push bp
+	mov bp, sp
+	push di
+	push si
+	
+	mov si, [bp+6]
+	mov ax, [bp+4]
+	
 	push si
 
 .next_char:
@@ -1105,13 +1131,19 @@ os_string_tokenize:
 .return_token:
 	mov byte [si], 0
 	inc si
-	mov di, si
+	mov ax, si
 	pop si
+	pop si
+	pop di
+	pop bp
 	ret
 
 .no_more:
-	mov di, 0
+	mov ax, 0
 	pop si
+	pop si
+	pop di
+	pop bp
 	ret
 
 
