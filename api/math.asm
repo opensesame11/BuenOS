@@ -28,7 +28,7 @@ _seedRandom:
 	in al, 0x71
 	mov bl, al
 
-	mov word [os_random_seed], bx	; Seed will be something like 0x4435 (if it
+	mov word [.randomSeed], bx	; Seed will be something like 0x4435 (if it
 					; were 44 minutes and 35 seconds after the hour)
 	pop ax
 	pop bx

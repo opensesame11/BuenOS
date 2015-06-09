@@ -144,7 +144,10 @@ os_get_file_list:
 ; OUT: BX = file size (in bytes), carry set if file not found
 
 os_load_file:
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
 	call int_filename_convert
 
 	mov [.filename_loc], ax		; Store filename location
@@ -215,13 +218,21 @@ os_load_file:
 
 	mov byte [di+11], 0		; Add a terminator to directory name entry
 
-	mov ax, di			; Convert root buffer name to upper case
-	call os_string_uppercase
+	push di				; Convert root buffer name to upper case
+	call _stringUppercase
+	inc sp
+	inc sp
 
 	mov si, [.filename_loc]		; DS:SI = location of filename to load
 
-	call os_string_compare		; Current entry same as requested?
-	jc .found_file_to_load
+	push si
+	push di
+	call _stringEqual		; Current entry same as requested?
+	inc sp
+	inc sp
+	inc sp
+	inc sp
+	jnz .found_file_to_load
 
 	loop .next_root_entry
 
@@ -354,12 +365,19 @@ os_write_file:
 	pusha
 
 	mov si, ax
-	call os_string_length
+	push ax
+	call _stringLength
+	inc sp
+	inc sp
 	cmp ax, 0
 	je near .failure
 	mov ax, si
 
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
+
 	call int_filename_convert	; Make filename FAT12-style
 	jc near .failure
 
@@ -652,11 +670,17 @@ os_write_file:
 ; IN: AX = filename location; OUT: carry clear if found, set if not
 
 os_file_exists:
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
 	call int_filename_convert	; Make FAT12-style filename
 
 	push ax
-	call os_string_length
+	push ax
+	call _stringLength
+	inc sp
+	inc sp
 	cmp ax, 0
 	je .failure
 	pop ax
@@ -685,7 +709,10 @@ os_file_exists:
 os_create_file:
 	clc
 
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
 	call int_filename_convert	; Make FAT12-style filename
 	pusha
 
@@ -768,7 +795,10 @@ os_create_file:
 
 os_remove_file:
 	pusha
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
 	call int_filename_convert	; Make filename FAT12-style
 	push ax				; Save filename
 
@@ -884,7 +914,10 @@ os_rename_file:
 
 	pop ax				; Get chosen filename back
 
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
 	call int_filename_convert
 
 	call disk_get_root_entry	; Entry will be returned in DI
@@ -894,7 +927,11 @@ os_rename_file:
 
 	mov ax, bx
 
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
+
 	call int_filename_convert
 
 	mov si, ax
@@ -926,7 +963,10 @@ os_rename_file:
 os_get_file_size:
 	pusha
 
-	call os_string_uppercase
+	push ax
+	call _stringUppercase
+	inc sp
+	inc sp
 	call int_filename_convert
 
 	clc
@@ -975,7 +1015,10 @@ int_filename_convert:
 
 	mov si, ax
 
-	call os_string_length
+	push ax
+	call _stringLength
+	inc sp
+	inc sp
 	cmp ax, 14			; Filename too long?
 	jg .failure			; Fail if so
 

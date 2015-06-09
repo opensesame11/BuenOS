@@ -6,9 +6,9 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; unsigned short getStringLength(unsigned short stringAddr) -- Return length of a string
+; unsigned short stringLength(unsigned short stringAddr) -- Return length of a string
 
-_getStringLength:
+_stringLength:
 	push bp
 	mov bp, sp
 	push di
@@ -51,12 +51,12 @@ _reverseString:
 	push si
 	pusha
 
-	mov si, bp+4
+	mov si, [bp+4]
 	cmp byte [si], 0		; Don't attempt to reverse empty string
 	je .end
 
 	push si
-	call _getStringLength
+	call _stringLength
 	inc sp
 	inc sp
 
@@ -319,7 +319,7 @@ _stringJoin:
 	inc sp
 
 	push ax
-	call _getStringLength		; Get length of first string
+	call _stringLength		; Get length of first string
 	inc sp
 	inc sp
 
@@ -380,7 +380,7 @@ _stringChomp:
 
 .finished_copy:
 	push dx
-	call _getStringLength
+	call _stringLength
 	inc sp
 	inc sp
 	
@@ -573,7 +573,7 @@ _stringToShort:
 	mov si, [bp+4]
 
 	push si
-	call _getStringLength
+	call _stringLength
 	inc sp
 	inc sp
 
@@ -678,7 +678,7 @@ _shortToString:
 ; ------------------------------------------------------------------
 ; unsigned short sShortToString(signed short value) -- Convert signed integer to string
 
-sShortToString:
+_sShortToString:
 	push bp
 	mov bp, sp
 	push di
@@ -789,7 +789,7 @@ _getTimeString:
 	call .add_digit			; BCD already in 24-hour format
 	mov al, ch
 	call .add_digit
-	jmp short .minutes
+	jmp .minutes
 
 .twelve_hr:
 	cmp dx, 0			; If 00mm, make 12 AM
@@ -997,7 +997,7 @@ _getDateString:
 	mov ah, cl			; Year
 	call .add_2digits		; At least 2 digits for year, always
 
-	jmp short .done
+	jmp .done
 
 .do_fmt0:				; Default format, M/D/Y (US and others)
 	mov ah,	dh			; Month

@@ -1,64 +1,15 @@
 [BITS 16]
 
+global _main
+_main:
+	jmp kernel
+
 %include "api/globaldefinitions.asm"
+
 %DEFINE OS_VERSION "0.1"
 %DEFINE API_VERSION 1
 
 disk_buffer equ 6000h
-
-global _main
-_main:
-	jmp kernel
-	jmp _vgaSetup
-	jmp _vgaPrint
-	jmp _vgaPrintString
-	jmp _vgaSetCursor
-	jmp _vgaSetupCursor
-	jmp _pause
-	jmp _getAPIVersion
-	jmp _fatalError
-	jmp os_string_length
-	jmp os_string_reverse
-	jmp os_find_char_in_string
-	jmp os_string_charchange
-	jmp os_string_uppercase
-	jmp os_string_lowercase
-	jmp os_string_copy
-	jmp os_string_truncate
-	jmp os_string_join
-	jmp os_string_chomp
-	jmp os_string_strip
-	jmp os_string_compare
-	jmp os_string_strincmp
-	jmp os_string_parse
-	jmp os_string_to_int
-	jmp os_int_to_string
-	jmp os_sint_to_string
-	jmp os_long_int_to_string
-	jmp os_set_time_fmt
-	jmp os_get_time_string
-	jmp os_set_date_fmt
-	jmp os_get_date_string
-	jmp os_string_tokenize
-	jmp os_get_file_list
-	jmp os_load_file
-	jmp os_write_file
-	jmp os_file_exists
-	jmp os_create_file
-	jmp os_remove_file
-	jmp os_rename_file
-	jmp os_get_file_size
-	jmp _waitKey
-	jmp _getKey
-	jmp os_seed_random
-	jmp os_get_random
-	jmp os_bcd_to_int
-	jmp os_long_int_negate
-	jmp _portWrite
-	jmp _portRead
-	jmp _serialSetup
-	jmp _serialWrite
-	jmp _serialRead
 
 %include "api/disk.asm" ;Disk utilities
 %include "api/math.asm" ;Math functions
@@ -73,7 +24,7 @@ kernel:
 	cli
 	mov ax, 0
 	mov ss, ax
-	mov ax, 500h ;Set stack to 0x0500 (the lowest free memory range) giving a stack size of 128kb
+	mov ax, 500h ;Set stack to 0x0500 (the lowest free memory range) giving a stack size of 128kb *OMG HUGE*
 	mov sp, ax
 	sti
 
@@ -91,11 +42,6 @@ kernel:
 
 	push bootscreen
 	call _vgaPrintString
-	inc sp
-	inc sp
-
-	push 25
-	call _pause ;pause for 25 * 110ms = 2750ms = 2.75s
 	inc sp
 	inc sp
 

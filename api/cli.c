@@ -1,6 +1,8 @@
 #include "buenosapi.h"
 
-unsigned short commandLine(){
+void commandLine(){
+	vgaSetup(0x13);
+	pause(0xF0);
 	vgaSetup(0x3);
-	return 0xb;
+	return;
 }
