@@ -1,8 +1,12 @@
 #include "buenosapi.h"
 
+char input;
+unsigned short waow;
+unsigned short msgLen;
+
 void commandLine(){
-	vgaSetup(0x13);
-	pause(0xF0);
-	vgaSetup(0x3);
-	return;
+	pause( 15 );
+	vgaSetCursor( 0, 24 );
+	vgaPrint( ' ' );
+	waitKey();
 }

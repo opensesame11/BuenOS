@@ -22,8 +22,26 @@ _vgaSetup:
 	pop bp
 	ret
 
+
 ; ------------------------------------------------------------------
-; void vgaPrint(short character); - Print single character as teletype
+; void vgaChangeAttributes(short attribute); - Change attributes of characters being output
+
+_vgaChangeAttributes:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+4]
+
+	pop si
+	pop di
+	pop bp
+	ret
+
+
+; ------------------------------------------------------------------
+; void vgaPrint(short character); - Print single character
 
 _vgaPrint:
 	push bp
@@ -99,21 +117,11 @@ _vgaSetupCursor:
 	push si
 	pusha
 
-	mov ax, [bp+8]
-	mov bx, [bp+6]
-	mov dx, [bp+4]
+	mov bx, [bp+8];top
+	mov cx, [bp+6];bottom
+	mov dx, [bp+4];blink
 
-	xor cx, cx ;set cx to 0
-	xor dx, 0000000000000011h ;eliminate all but two bits
-	shl dx, 13 ;move blink to bits 5 and 6 of high byte
-	or cx, dx
-
-	xor bx, 0000000000001111b
-	or cx, dx
-
-	xor ax, 0000000000001111b
-	shl ax, 8
-	or cx, ax
+	
 
 	mov ah, 01h
 	int 10h
