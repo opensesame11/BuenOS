@@ -6,11 +6,17 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; os_get_file_list -- Generate comma-separated string of files on floppy
+; void getFileList(unsigned short stringAddr) -- Generate comma-separated string of files on floppy
 ; IN/OUT: AX = location to store zero-terminated filename string
 
-os_get_file_list:
+_getFileList:
+	push bp
+	mov bp, sp
+	push di
+	push di
 	pusha
+
+	mov ax, [bp+4]
 
 	mov word [.file_list_tmp], ax
 
@@ -132,6 +138,9 @@ os_get_file_list:
 	mov byte [di], 0		; Zero-terminate string (gets rid of final comma)
 
 	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -139,11 +148,20 @@ os_get_file_list:
 
 
 ; ------------------------------------------------------------------
-; os_load_file -- Load file into RAM
+; unsigned short loadFile(unsigned short filename, unsigned short location) -- Load file into RAM
 ; IN: AX = location of filename, CX = location in RAM to load file
 ; OUT: BX = file size (in bytes), carry set if file not found
 
-os_load_file:
+_loadFile:
+	push bp
+	mov bp, sp
+	push di
+	push si
+	pusha
+
+	mov ax, [bp+6]
+	mov cx, [bp+4]
+
 	push ax
 	call _stringUppercase
 	inc sp
@@ -239,6 +257,10 @@ os_load_file:
 .root_problem:
 	mov bx, 0			; If file not found or major disk error,
 	stc				; return with size = 0 and carry set
+	popa
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -338,7 +360,11 @@ os_load_file:
 
 
 .end:
-	mov bx, [.file_size]		; Get file size to pass back in BX
+	popa
+	pop si
+	pop di
+	pop bp
+	mov ax, [.file_size]		; Get file size to pass back in BX
 	clc				; Carry clear = good load
 	ret
 
@@ -353,15 +379,22 @@ os_load_file:
 
 	.string_buff	times 12 db 0	; For size (integer) printing
 
-	.err_msg_floppy_reset	db 'os_load_file: Floppy failed to reset', 0
+	.err_msg_floppy_reset	db '_loadFile: Floppy failed to reset', 0
 
 
 ; --------------------------------------------------------------------------
-; os_write_file -- Save (max 64K) file to disk
-; IN: AX = filename, BX = data location, CX = bytes to write
-; OUT: Carry clear if OK, set if failure
+; unsigned short writeFile(unsigned short filename, unsigned short location, unsigned short size) -- Save (max 64K) file to disk
 
-os_write_file:
+_writeFile:
+	push bp
+	mov bp, sp
+	push si
+	push di
+
+	mov ax, [bp+8]
+	mov bx, [bp+6]
+	mov cx, [bp+4]
+
 	pusha
 
 	mov si, ax
@@ -385,7 +418,10 @@ os_write_file:
 	mov word [.location], bx
 	mov word [.filename], ax
 
-	call os_file_exists		; Don't overwrite a file if it exists!
+	push ax
+	call _fileExists		; Don't overwrite a file if it exists!
+	inc sp
+	inc sp
 	jnc near .failure
 
 
@@ -421,7 +457,10 @@ os_write_file:
 
 	mov word ax, [.filename]	; Get filename back
 
-	call os_create_file		; Create empty root dir entry for this file
+	push ax
+	call _createFile		; Create empty root dir entry for this file
+	inc sp
+	inc sp
 	jc near .failure		; If we can't write to the media, jump out
 
 	mov word bx, [.filesize]
@@ -644,12 +683,18 @@ os_write_file:
 
 .finished:
 	popa
-	clc
+	mov ax, 0
+	pop si
+	pop di
+	pop bp
 	ret
 
 .failure:
 	popa
-	stc				; Couldn't write!
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -666,10 +711,16 @@ os_write_file:
 
 
 ; --------------------------------------------------------------------------
-; os_file_exists -- Check for presence of file on the floppy
-; IN: AX = filename location; OUT: carry clear if found, set if not
+; unsigned short fileExists(unsigned short filename) -- Check for presence of file on the floppy
 
-os_file_exists:
+_fileExists:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+4]
+
 	push ax
 	call _stringUppercase
 	inc sp
@@ -677,16 +728,22 @@ os_file_exists:
 	call int_filename_convert	; Make FAT12-style filename
 
 	push ax
+
 	push ax
 	call _stringLength
 	inc sp
 	inc sp
 	cmp ax, 0
 	je .failure
+
 	pop ax
 
 	push ax
+
+	push ax
 	call disk_read_root_dir
+	inc sp
+	inc sp
 
 	pop ax				; Restore filename
 
@@ -694,19 +751,37 @@ os_file_exists:
 
 	call disk_get_root_entry	; Set or clear carry flag
 
+	jnc .success
+	push ax
+	jmp .failure
+.success:
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 .failure:
 	pop ax
-	stc
+	mov ax, 0
+
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; --------------------------------------------------------------------------
-; os_create_file -- Creates a new 0-byte file on the floppy disk
-; IN: AX = location of filename; OUT: Nothing
+; unsigned short createFile(unsigned short filename) -- Creates a new 0-byte file on the floppy disk
 
-os_create_file:
+_createFile:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+4]
+
 	clc
 
 	push ax
@@ -718,7 +793,11 @@ os_create_file:
 
 	push ax				; Save filename for now
 
-	call os_file_exists		; Does the file already exist?
+
+	push ax
+	call _fileExists		; Does the file already exist?
+	inc sp
+	inc sp
 	jnc .exists_error
 
 
@@ -741,7 +820,10 @@ os_create_file:
 	pop ax				; Get filename back
 
 	popa
-	stc				; Set carry for failure
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -780,20 +862,33 @@ os_create_file:
 	jc .failure
 
 	popa
-	clc				; Clear carry for success
+	mov ax, 0
+	pop si
+	pop di
+	pop bp
 	ret
 
 .failure:
 	popa
-	stc
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; --------------------------------------------------------------------------
-; os_remove_file -- Deletes the specified file from the filesystem
+; unsigned short removeFile(unsigned short filename) -- Deletes the specified file from the filesystem
 ; IN: AX = location of filename to remove
 
-os_remove_file:
+_removeFile:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+4]
+
 	pusha
 	push ax
 	call _stringUppercase
@@ -885,12 +980,18 @@ os_remove_file:
 
 .nothing_to_do:
 	popa
-	clc
+	mov ax, 0
+	pop si
+	pop di
+	pop bp
 	ret
 
 .failure:
 	popa
-	stc
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 
@@ -898,11 +999,17 @@ os_remove_file:
 
 
 ; --------------------------------------------------------------------------
-; os_rename_file -- Change the name of a file on the disk
-; IN: AX = filename to change, BX = new filename (zero-terminated strings)
-; OUT: carry set on error
+; unsigned short renameFile(unsigned short oldName, unsigned short newName) -- Change the name of a file on the disk
 
-os_rename_file:
+_renameFile:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+6]
+	mov bx, [bp+4]
+
 	push bx
 	push ax
 
@@ -942,25 +1049,39 @@ os_rename_file:
 	call disk_write_root_dir	; Save root dir to disk
 	jc .fail_write
 
-	clc
+	mov ax, 0
+	pop si
+	pop di
+	pop bp
 	ret
 
 .fail_read:
 	pop ax
-	stc
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 .fail_write:
-	stc
+	mov ax, 1
+	pop si
+	pop di
+	pop bp
 	ret
 
 
 ; --------------------------------------------------------------------------
-; os_get_file_size -- Get file size information for specified file
-; IN: AX = filename; OUT: BX = file size in bytes (up to 64K)
-; or carry set if file not found
+; unsigned short getFileSize(unsigned short filename) -- Get file size information for specified file
 
-os_get_file_size:
+_getFileSize:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+4]
+
 	pusha
 
 	push ax
@@ -988,14 +1109,20 @@ os_get_file_size:
 	mov word [.tmp], bx
 
 	popa
+	pop si
+	pop di
+	pop bp
 
-	mov word bx, [.tmp]
+	mov word ax, [.tmp]
 
 	ret
 
 .failure:
 	popa
-	stc
+	mov ax, 0
+	pop si
+	pop di
+	pop bp
 	ret
 
 
