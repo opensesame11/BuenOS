@@ -1,6 +1,6 @@
 [BITS 16]
 
-;-------------BILLSUTILSdotOS Bootloader----------------
+;-------------BuenOS Bootloader----------------
 
 jmp short bootloader
 nop
@@ -159,7 +159,7 @@ fatal_disk_error:
 read_fat_ok:
 	popa
 
-	mov ax, 2000h			; Segment where we'll load the kernel
+	mov ax, 2000h			; Segment where we'll load the kernel (7e0h + 320h(size of bootloader, stack and buffer) = b00h)
 	mov es, ax
 	mov bx, 0
 

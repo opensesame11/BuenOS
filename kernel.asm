@@ -22,9 +22,9 @@ disk_buffer equ 6000h
 
 kernel:
 	cli
-	mov ax, 0
+	mov ax, 50h
 	mov ss, ax
-	mov ax, 500h ;Set stack to 0x0500 (the lowest free memory range) giving a stack size of 128kb *OMG HUGE*
+	mov ax, 0h ;Set stack to 0x0500 (the lowest free memory range) giving a stack size of 128kb *OMG HUGE*
 	mov sp, ax
 	sti
 
@@ -49,7 +49,7 @@ kernel:
 	call _commandLine
 
 	push errorMsg
-	call _fatalError ;Next instructions are useless because fatalError(unsigned short msgAddr); hangs
+	call _fatalError
 	inc sp
 	inc sp
 

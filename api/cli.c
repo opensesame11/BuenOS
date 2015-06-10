@@ -1,12 +1,15 @@
 #include "buenosapi.h"
 
-char input;
-unsigned short waow;
-unsigned short msgLen;
+
 
 void commandLine(){
-	pause( 15 );
-	vgaSetCursor( 0, 24 );
-	vgaPrint( ' ' );
+	while(1){
+		vgaPrintString( " W" );
+		pause( 1 );
+		vgaPrint( 'O' );
+		pause( 1 );
+		vgaPrint( 'W' );
+		pause( 3 );
+	}
 	waitKey();
 }

@@ -5,7 +5,7 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; void vgaSetup(short mode); - Sets up a basic 80x25 VGA display for fallback
+; void vgaSetup(unsigned short mode); - Sets up a basic 80x25 VGA display for fallback
 
 _vgaSetup:
 	push bp
@@ -24,24 +24,84 @@ _vgaSetup:
 
 
 ; ------------------------------------------------------------------
-; void vgaChangeAttributes(short attribute); - Change attributes of characters being output
+; unsigned short vgaGetChar(unsigned short x, unsigned short y); - Returns character at x,y on screen
 
-_vgaChangeAttributes:
+_vgaGetChar:
 	push bp
 	mov bp, sp
 	push di
 	push si
+	pusha
 
-	mov ax, [bp+4]
+	call _vgaGetPos
+	push bx
+	push ax
 
+	mov ax, [bp+6]
+	mov bx, [bp+4]
+
+	push bx
+	push ax
+	call _vgaSetCursor
+	inc sp
+	inc sp
+	inc sp
+	inc sp
+
+	mov ah, 08h
+	int 10h
+	mov [.temp], ax
+
+	call _vgaSetCursor
+	inc sp
+	inc sp
+	inc sp
+	inc sp
+
+	popa
 	pop si
 	pop di
 	pop bp
+	mov ax, [.temp]
 	ret
+
+	.temp dw 0
+
+; ------------------------------------------------------------------
+; unsigned short vgaGetPos(); - Returns cursor position pointer
+
+_vgaGetPos:
+	push bp
+	mov bp, sp
+	push di
+	push si
+	pusha
+
+	mov ah, 03h
+	mov bh, 0
+	int 10h
+
+	mov ax, dx
+	xor ax, 00FFh
+	mov bx, dx
+	shr bx, 4
+
+	mov [.x], ax
+	mov [.y], bx
+
+	popa
+	pop si
+	pop di
+	pop bp
+	mov ax, .x
+	ret
+
+	.x dw 0
+	.y dw 0
 
 
 ; ------------------------------------------------------------------
-; void vgaPrint(short character); - Print single character
+; void vgaPrint(unsigned short character); - Print single character
 
 _vgaPrint:
 	push bp
@@ -59,7 +119,7 @@ _vgaPrint:
 	ret
 
 ; ------------------------------------------------------------------
-; void vgaPrintString(short stringAddr); - Prints null-terminated string
+; void vgaPrintString(unsigned short stringAddr); - Prints null-terminated string
 
 _vgaPrintString:
 	push bp
@@ -85,7 +145,7 @@ _vgaPrintString:
 	ret
 
 ; ------------------------------------------------------------------
-; void vgaSetCursor(short x, short y); - Move cursor to position
+; void vgaSetCursor(unsigned short x, unsigned short y); - Move cursor to position
 
 _vgaSetCursor:
 	push bp
@@ -108,7 +168,7 @@ _vgaSetCursor:
 
 
 ; ------------------------------------------------------------------
-; void vgaSetupCursor(short topLine, short bottomLine, short blink); - Change cursor style
+; void vgaSetupCursor(unsigned short topLine, unsigned short bottomLine, unsigned short blink); - Change cursor style
 
 _vgaSetupCursor:
 	push bp
