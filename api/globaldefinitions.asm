@@ -8,8 +8,11 @@ globalDefinitions:
 	jmp _vgaPrintString
 		global _vgaPrintString
 
-	jmp _vgaSetCursor
-		global _vgaSetCursor
+	jmp _vgaSetPos
+		global _vgaSetPos
+
+	jmp _vgaGetPos
+		global _vgaGetPos
 
 	jmp _vgaSetupCursor
 		global _vgaSetupCursor
@@ -19,6 +22,12 @@ globalDefinitions:
 
 	jmp _getAPIVersion
 		global _getAPIVersion
+
+	jmp _getOSVersion
+		global _getOSVersion
+
+	jmp _shutdown
+		global _shutdown
 
 	jmp _fatalError
 		global _fatalError
@@ -65,11 +74,11 @@ globalDefinitions:
 	jmp _stringLength
 		global _stringLength
 
-	jmp _reverseString
-		global _reverseString
+	jmp _stringReverse
+		global _stringReverse
 
-	jmp _findCharInString
-		global _findCharInString
+	jmp _stringFindChar
+		global _stringFindChar
 
 	jmp _stringFindAndReplace
 		global _stringFindAndReplace
@@ -101,14 +110,14 @@ globalDefinitions:
 	jmp _stringParse
 		global _stringParse
 
-	jmp _stringToShort
-		global _stringToShort
+	jmp _stringToInt
+		global _stringToInt
 
-	jmp _shortToString
-		global _shortToString
+	jmp _intToString
+		global _intToString
 
-	jmp _sShortToString
-		global _sShortToString
+	jmp _sIntToString
+		global _sIntToString
 
 	jmp _setTimeFMT
 		global _setTimeFMT

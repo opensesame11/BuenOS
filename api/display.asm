@@ -42,7 +42,7 @@ _vgaGetChar:
 
 	push bx
 	push ax
-	call _vgaSetCursor
+	call _vgaSetPos
 	inc sp
 	inc sp
 	inc sp
@@ -52,7 +52,7 @@ _vgaGetChar:
 	int 10h
 	mov [.temp], ax
 
-	call _vgaSetCursor
+	call _vgaSetPos
 	inc sp
 	inc sp
 	inc sp
@@ -147,7 +147,7 @@ _vgaPrintString:
 ; ------------------------------------------------------------------
 ; void vgaSetCursor(unsigned short x, unsigned short y); - Move cursor to position
 
-_vgaSetCursor:
+_vgaSetPos:
 	push bp
 	mov bp, sp
 	push di

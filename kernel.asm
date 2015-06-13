@@ -5,9 +5,8 @@ _main:
 	jmp kernel
 
 %include "api/globaldefinitions.asm"
-
-%DEFINE OS_VERSION "0.1"
 %DEFINE API_VERSION 1
+%DEFINE OS_VERSION "Barebones 1"
 
 disk_buffer equ 6000h
 
@@ -22,9 +21,9 @@ disk_buffer equ 6000h
 
 kernel:
 	cli
-	mov ax, 50h
+	mov ax, 050h	;0x00000500
 	mov ss, ax
-	mov ax, 0h ;Set stack to 0x0500 (the lowest free memory range) giving a stack size of 128kb *OMG HUGE*
+	mov ax, 0a8ffh	;0x0000adff
 	mov sp, ax
 	sti
 
@@ -48,13 +47,7 @@ kernel:
 	extern _commandLine
 	call _commandLine
 
-	push errorMsg
-	call _fatalError
-	inc sp
-	inc sp
-
 	jmp $
-
 ; ------------------------------------------------------------------
 ; System Variables -- Storage for system wide information
 fmt_12_24 db 0
@@ -87,4 +80,14 @@ bootscreen 	db "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
 		db "#'''+++..``+;,.```.,:;;;::;:,.,'+###### | |_) | |_| |  __/ | | | |__| |____) |# ",
 		db "| .:';'';,,`:'..`` `.,::,,,,..``.,:;+#@ |____/ \__,_|\___|_| |_|\____/|_____/ | ",
 		db "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#", 0
+
+os_version	db OS_VERSION
+
+os_version_msg	db "BuenOS version ", OS_VERSION, 10, 13
+		db "Copyright (C) 2015 BuenOS Team", 10, 13
+		db "License: GNU GPLv2 (LICENSE.TXT)", 10, 13
+		db "This is free software; "
+		db "you are free to change and redistribute it.", 10, 13
+		db "There is NO WARRANTY, to the "
+		db "extent permitted by law.", 10, 13, 10, 0
 

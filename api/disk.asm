@@ -7,7 +7,6 @@
 
 ; ------------------------------------------------------------------
 ; void getFileList(unsigned short stringAddr) -- Generate comma-separated string of files on floppy
-; IN/OUT: AX = location to store zero-terminated filename string
 
 _getFileList:
 	push bp

@@ -6,7 +6,7 @@ jmp short bootloader
 nop
 
 ;-------------------------------------------------------
-OEMLabel			db "        "
+OEMLabel		db "        "
 BytesPerSector		dw 512
 SectorsPerCluster	db 1
 ReservedForBoot		dw 1
@@ -16,19 +16,18 @@ LogicalSectors		dw 2880
 MediaDesctiptor		db 0xF0
 SectorsPerFat		dw 9
 SectorsPerTrack		dw 18
-Sides				dw 2
+Sides			dw 2
 HiddenSectors		dd 0
 LargeSectors		dd 0
-DriveNo				dw 0
-Signature			db 41
-VolumeID			dd 0x00000000
-VolumeLabel			db "BuenOS    "
-FileSystem			db "FAT12   "
+DriveNo			dw 0
+Signature		db 41
+VolumeID		dd 0x00000000
+VolumeLabel		db "BuenOS    "
+FileSystem		db "FAT12   "
 ;-------------------------------------------------------
 
 bootloader:
-	mov ax, 07C0h			; Set up 4K of stack space above buffer
-	add ax, 544			; 8k buffer = 512 paragraphs + 32 paragraphs (loader)
+	mov ax, 0D04h			; Set up 4K of stack space above buffer
 	cli				; Disable interrupts while changing stack
 	mov ss, ax
 	mov sp, 4096
@@ -159,9 +158,15 @@ fatal_disk_error:
 read_fat_ok:
 	popa
 
-	mov ax, 2000h			; Segment where we'll load the kernel (7e0h + 320h(size of bootloader, stack and buffer) = b00h)
+	mov ax, 0ae0h
 	mov es, ax
 	mov bx, 0
+
+;0x7c00 - 0x7dff 0x0200 size 512 bytes Bootloader
+;0x7e00 - 0x9dff 0x2000 size 8192 bytes Disk buffer
+;0x9e00 - 0xadff 0x1000 size 4096 bytes Stack
+;0xae00 kernelStart
+
 
 	mov ax, 0201h
 

@@ -63,7 +63,7 @@ _serialSetup:
 
 	mov dx, 0			; Configure serial port 1
 	mov ax, [bp+4]
-	cmp ax, 1
+	cmp ax, 0
 	je .slow_mode
 
 	mov ah, 0

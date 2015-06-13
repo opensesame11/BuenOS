@@ -49,10 +49,10 @@ _getRandom:
 	mov bp, sp
 	push di
 	push si
-	
+
 	mov ax, [bp+6]
 	mov bx, [bp+4]
-	
+
 	push dx
 	push bx
 	push ax
@@ -68,10 +68,10 @@ _getRandom:
 	pop bx
 	pop dx
 	add cx, ax			; Add the low offset back
-	
+
 	mov [.MSB], bx
 	mov [.LSB], ax
-	
+
 	mov ax, dx
 	pop si
 	pop di
@@ -91,7 +91,7 @@ _getRandom:
 	pop bx
  	pop dx
 	ret
-	
+
 	.MSB dw 0
 	.LSB dw 0
 
@@ -104,9 +104,9 @@ _bcdToInt:
 	mov bp, sp
 	push di
 	push si
-	
+
 	mov ax, [bp+4]
-	
+
 	pusha
 
 	mov bl, al			; Store entire number for now

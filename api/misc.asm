@@ -22,6 +22,72 @@ _getAPIVersion:
 
 
 ; ------------------------------------------------------------------
+; void* getOSVersion() -- Return OS Version String
+
+_getOSVersion:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, os_version_msg
+
+	pop si
+	pop di
+	pop bp
+	ret
+
+; ------------------------------------------------------------------
+; void shutdown() -- Shutdown the system (Very uncleanly I guess)
+
+_shutdown:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ah, 53h
+	mov al, 00h
+	xor bx, bx
+	int 15h
+	jnc .cont
+.error:
+	push .error_msg
+	call _fatalError
+	inc sp
+	inc sp
+	pop si
+	pop di
+	pop bp
+	ret
+.cont:
+	mov ah, 53h
+	mov al, 01h
+	xor bx, bx
+	int 15h
+	jc .error
+
+	mov ah, 53h
+	mov al, 08h
+	mov bx, 0001h
+	mov cx, 0001h
+	int 15h
+	jc .error
+
+	mov ah, 53h
+	mov al, 07h
+	mov bx, 0001h
+	mov cx, 03h
+	int 15h
+
+	pop si
+	pop di
+	pop bp
+	ret
+
+	.error_msg db "shutdown() call has failed... I don't even know how :P", 0
+
+; ------------------------------------------------------------------
 ; void pause(short time) -- Delay execution for specified 110ms chunks
 ; time = 110 millisecond chunks to wait (max delay is 32767, which multiplied by 55ms = 1802 seconds = 30 minutes)
 

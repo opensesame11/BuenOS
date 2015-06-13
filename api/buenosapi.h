@@ -2,23 +2,86 @@
 #define __AS386_16__
 #endif
 #ifndef BUENOSAPI
-#define BUENOSAPI
-void vgaSetup(unsigned short mode);
-void vgaPrint(unsigned short character);
-void vgaPrintString(unsigned short stringAddr);
-void vgaSetCursor(unsigned short x, unsigned short y);
-void vgaSetupCursor(unsigned short topLine, unsigned short bottomLine, unsigned short blink);
 
-void portWrite(unsigned short addr, unsigned short byte);
-unsigned short portRead(unsigned short addr);
-void serialSetup(unsigned short mode);
-unsigned short serialWrite(unsigned short byte);
-unsigned short serialRead();
+typedef void String;
+typedef char bcd;
 
-unsigned short waitKey();
-unsigned short getKey();
+typedef struct{
+	void *arg1;
+	void *arg2;
+	void *arg3;
+	void *arg4;
+} parsedString_t;
 
-unsigned short getAPIVersion();
-void pause(unsigned short time);
-void fatalError(unsigned short msgAddr);
+typedef struct{
+	unsigned int x;
+	unsigned int y;
+} cursorPos_t;
+
+typedef struct{
+	//return struct of getFileList
+} fileList_t;
+
+void vgaSetup(char mode);
+void vgaPrint(char character);
+void vgaPrintString(void* string);
+void vgaSetPos(unsigned int x, unsigned int y);
+void vgaSetupCursor(unsigned int attribute);
+	//---- TODO ----//
+//void vgaSetAttrib(unsigned int attribute);
+//unsigned int vgaGetAttrib(unsigned int x, unsigned int y);
+cursorPos_t* vgaGetPos();
+
+void pause(unsigned int time);
+unsigned int getAPIVersion();
+void* getOSVersion();
+void fatalError(String* errorMsg);
+	//---- TODO ----//
+//void shutdown();
+//void restart();
+
+void getFileList(String* fileList);
+unsigned int loadFile(String* filename, unsigned int destAddress);
+unsigned int writeFile(String* filename, unsigned int srcAddress, unsigned int size);//returns 0 on success
+unsigned int fileExists(String* filename);
+unsigned int createFile(String* filename);
+unsigned int removeFile(String* filename);
+unsigned int renameFile(String* oldName, String* newName);
+unsigned int getFileSize(String* filename);
+
+void portWrite(unsigned int port, char toPort);
+char portRead(unsigned int port);
+void serialSetup(unsigned int mode);
+void serialWrite(char toPort);
+char serialRead();
+
+unsigned int stringLength(String* string);
+void stringReverse(String* string);
+unsigned int stringFindChar(String* string, char find);//returns location of character's first appearance in string
+void stringFindAndReplace(String* string, char findAndReplace);
+void stringUppercase(String* string);
+void stringLowercase(String* string);
+void stringCopy(String* source, String* dest);
+void stringTrunctuate(String* string, unsigned int length);
+void stringJoin(String* sourceOne, String* sourceTwo, String* dest);
+void stringChomp(String* string);
+void stringStrip(String* string, char remove);//strips remove from string
+unsigned int stringEqual(String* stringOne, String* stringTwo);
+//String* stringParse[](String* string);
+unsigned int stringToInt(String* string);
+String* intToString(unsigned int value);
+String* sIntToString(signed int value);
+void setTimeFMT(unsigned int format);
+String* getTimeString();
+void setDateFMT(unsigned int format);
+String* getDateString();
+String* stringFindToken(String* string, char character, unsigned int offset);
+
+void seedRandom();
+unsigned int getRandom();
+unsigned int bcdToInt(bcd value);
+
+char waitKey();
+char getKey();
+
 #endif

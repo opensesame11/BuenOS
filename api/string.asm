@@ -42,9 +42,9 @@ _stringLength:
 
 
 ; ------------------------------------------------------------------
-; unsigned short reverseString(unsigned short stringAddr) -- Reverse the characters in a string
+; unsigned short stringReverse(unsigned short stringAddr) -- Reverse the characters in a string
 
-_reverseString:
+_stringReverse:
 	push bp
 	mov bp, sp
 	push di
@@ -86,9 +86,9 @@ _reverseString:
 
 
 ; ------------------------------------------------------------------
-; unsigned short findCharInString(unsigned short stringAddr, unsignedShort char) -- Find location of character in a string
+; unsigned short stringFindChar(unsigned short stringAddr, unsignedShort char) -- Find location of character in a string
 
-_findCharInString:
+_stringFindChar:
 	push bp
 	mov bp, sp
 	push di
@@ -134,7 +134,6 @@ _findCharInString:
 
 ; ------------------------------------------------------------------
 ; void stringFindAndReplace(unsigned short stringAddr, unsigned short charToFind, unsignedShort charToUse) -- Change instances of character in a string
-; IN: SI = string, AL = char to find, BL = char to replace with
 
 _stringFindAndReplace:
 	push bp
@@ -383,7 +382,7 @@ _stringChomp:
 	call _stringLength
 	inc sp
 	inc sp
-	
+
 	cmp ax, 0			; If empty or all blank, done, return 'null'
 	je .done
 
@@ -545,9 +544,6 @@ _stringParse:
 .finish:
 	pop ax
 	mov [.elementLocations], ax
-	mov [.elementLocations+1], bx
-	mov [.elementLocations+2], cx
-	mov [.elementLocations+3], dx
 
 	mov ax, .elementLocations
 	pop si
@@ -555,15 +551,12 @@ _stringParse:
 	pop bp
 	ret
 
-.elementLocations:	dw 0
-			dw 0
-			dw 0
-			dw 0
+	.elementLocations times 4 dw 0
 
 ; ------------------------------------------------------------------
-; unsigned short stringToShort(unsigned short stringToConvert) -- Convert decimal string to integer value
+; unsigned short stringToInt(unsigned short stringToConvert) -- Convert decimal string to integer value
 
-_stringToShort:
+_stringToInt:
 	push bp
 	mov bp, sp
 	push di
@@ -632,9 +625,9 @@ _stringToShort:
 
 
 ; ------------------------------------------------------------------
-; unsigned short shortToString(unsigned short value) -- Convert unsigned integer to string
+; unsigned short intToString(unsigned short value) -- Convert unsigned integer to string
 
-_shortToString:
+_intToString:
 	push bp
 	mov bp, sp
 	push di
@@ -678,7 +671,7 @@ _shortToString:
 ; ------------------------------------------------------------------
 ; unsigned short sShortToString(signed short value) -- Convert signed integer to string
 
-_sShortToString:
+_sIntToString:
 	push bp
 	mov bp, sp
 	push di
@@ -885,9 +878,9 @@ _setDateFMT:
 	push di
 	push si
 	pusha
-	
+
 	mov ax, [bp+4]
-	
+
 	test al, 80h			; ASCII months (bit 7)?
 	jnz .fmt_clear
 
@@ -1106,7 +1099,7 @@ _getDateString:
 
 
 ; ------------------------------------------------------------------
-; unsigned short stringFindToken(unsigned short stringAddr, unsigned short character) -- Reads tokens separated by specified char from
+; unsigned short stringFindToken(unsigned short stringAddr, unsigned short character, unsigned int offset) -- Reads tokens separated by specified char from
 ; a string. Returns pointer to next token, or 0 if none left
 
 _stringFindToken:
@@ -1114,10 +1107,10 @@ _stringFindToken:
 	mov bp, sp
 	push di
 	push si
-	
+
 	mov si, [bp+6]
 	mov ax, [bp+4]
-	
+
 	push si
 
 .next_char:
