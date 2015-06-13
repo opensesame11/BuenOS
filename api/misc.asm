@@ -88,6 +88,22 @@ _shutdown:
 	.error_msg db "shutdown() call has failed... I don't even know how :P", 0
 
 ; ------------------------------------------------------------------
+; void restart() -- Restarts the system
+
+_restart:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	;Restart call
+
+	pop si
+	pop di
+	pop bp
+	ret
+
+; ------------------------------------------------------------------
 ; void pause(short time) -- Delay execution for specified 110ms chunks
 ; time = 110 millisecond chunks to wait (max delay is 32767, which multiplied by 55ms = 1802 seconds = 30 minutes)
 

@@ -11,6 +11,8 @@ unsigned int temp;
 cursorPos_t* cursorPos;
 char directoryListing[1024];
 char exit;
+void launchApplication( String filename );
+
 
 void commandLine(){
 	inputKey = 0;
@@ -69,7 +71,18 @@ void commandLine(){
 			vgaPrintString( "\r\n" );
 		}
 		else if( stringEqual( inputBuffer, "HELP" ) ) vgaPrintString( helpstring );
+		else launchApplication( inputBuffer );
 	}
+}
+
+void launchApplication( String filename ){
+	if( fileExists( filename ) ) loadFile( filename, 0x8000 );
+	else{
+		vgaPrintString( "File " );
+		vgaPrintString( filename );
+		vgaPrintString( " cannot be found.\r\n" );
+	}
+	return;
 }
 
 unsigned int isInput( char input ){

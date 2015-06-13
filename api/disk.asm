@@ -148,8 +148,6 @@ _getFileList:
 
 ; ------------------------------------------------------------------
 ; unsigned short loadFile(unsigned short filename, unsigned short location) -- Load file into RAM
-; IN: AX = location of filename, CX = location in RAM to load file
-; OUT: BX = file size (in bytes), carry set if file not found
 
 _loadFile:
 	push bp
@@ -254,8 +252,8 @@ _loadFile:
 	loop .next_root_entry
 
 .root_problem:
-	mov bx, 0			; If file not found or major disk error,
-	stc				; return with size = 0 and carry set
+	mov [.success], word 0		; Set failure int
+	mov ax, .success
 	popa
 	pop si
 	pop di
@@ -363,10 +361,8 @@ _loadFile:
 	pop si
 	pop di
 	pop bp
-	mov ax, [.file_size]		; Get file size to pass back in BX
-	clc				; Carry clear = good load
+	mov ax, .success		; Pass the success and size struct
 	ret
-
 
 	.bootd		db 0 		; Boot device number
 	.cluster	dw 0 		; Cluster of the file we want to load
@@ -374,6 +370,7 @@ _loadFile:
 
 	.filename_loc	dw 0		; Temporary store of filename location
 	.load_position	dw 0		; Where we'll load the file
+	.success	dw 0		; Whether or not the load was successful
 	.file_size	dw 0		; Size of the file
 
 	.string_buff	times 12 db 0	; For size (integer) printing

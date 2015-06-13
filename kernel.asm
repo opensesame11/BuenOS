@@ -44,6 +44,11 @@ kernel:
 	inc sp
 	inc sp
 
+	push 32
+	call _pause
+	inc sp
+	inc sp
+
 	extern _commandLine
 	call _commandLine
 
