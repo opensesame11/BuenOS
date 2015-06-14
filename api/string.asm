@@ -255,8 +255,8 @@ _stringCopy:
 	push si
 	pusha
 
-	mov si, [bp+6]
-	mov di, [bp+4]
+	mov si, [bp+4]
+	mov di, [bp+6]
 
 .more:
 	mov al, [si]			; Transfer contents (at least one byte terminator)
