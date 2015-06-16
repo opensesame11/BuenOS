@@ -170,7 +170,7 @@ _stringFindAndReplace:
 
 
 ; ------------------------------------------------------------------
-; void stringUppercase(unsigned short stringAddr) -- Convert zero-terminated string to upper case
+; void stringUppercase( String input ) -- Convert zero-terminated string to upper case
 
 _stringUppercase:
 	push bp
@@ -208,7 +208,7 @@ _stringUppercase:
 
 
 ; ------------------------------------------------------------------
-; void stringLowercase(unsigned short stringAddr) -- Convert zero-terminated string to lower case
+; void stringLowercase( String input ) -- Convert zero-terminated string to lower case
 
 _stringLowercase:
 	push bp
@@ -405,7 +405,7 @@ _stringChomp:
 
 
 ; ------------------------------------------------------------------
-; void _stringStrip(unsigned short stringAddr, unsigned short charToRemove) -- Removes specified character from a string (max 255 chars)
+; void _stringStrip(unsigned short stringAddr, char charToRemove) -- Removes specified character from a string (max 255 chars)
 
 _stringStrip:
 	push bp
@@ -414,8 +414,8 @@ _stringStrip:
 	push si
 	pusha
 
-	mov si, [bp+6]
-	mov ax, [bp+4]
+	mov si, [bp+4]
+	mov ax, [bp+6]
 
 	mov di, si
 
@@ -486,8 +486,7 @@ _stringEqual:
 
 
 ; ------------------------------------------------------------------
-; unsigned short stringParse(unsigned short stringAddr) -- Take string (eg "run foo bar baz") and parses different elements into seperate strings. Max 4 elements
-; ax = stringAddrOne; ax+1 = stringAddrTwo; etc.
+; parsedString_t* stringParse(String stringAddr) -- Replaces ' ' with 0 in string and fills table with start addresses of each point
 
 _stringParse:
 	push bp
@@ -497,61 +496,68 @@ _stringParse:
 
 	mov si, [bp+4]
 
-	mov ax, si			; AX = start of first string
-
-	mov bx, 0			; By default, other strings start empty
 	mov cx, 0
-	mov dx, 0
+	mov ax, si
+	mov di, .argv
+	stosw
 
-	push ax				; Save to retrieve at end
+.loop:
+	cmp cx, 256
+	jge .done
 
-.loop1:
-	lodsb				; Get a byte
-	cmp al, 0			; End of string?
-	je .finish
-	cmp al, ' '			; A space?
-	jne .loop1
-	dec si
-	mov byte [si], 0		; If so, zero-terminate this bit of the string
-
-	inc si				; Store start of next string in BX
-	mov bx, si
-
-.loop2:					; Repeat the above for CX and DX...
 	lodsb
 	cmp al, 0
-	je .finish
+	je .done
+	cmp al, '"'
+	je .toggleQuote
+	cmp byte [.inQuotes], 1
+	je .loop
 	cmp al, ' '
-	jne .loop2
+	jne .loop
+
 	dec si
 	mov byte [si], 0
-
 	inc si
-	mov cx, si
 
-.loop3:
-	lodsb
-	cmp al, 0
-	je .finish
-	cmp al, ' '
-	jne .loop3
-	dec si
-	mov byte [si], 0
+	mov ax, si
+	stosw
+	inc cx
 
-	inc si
-	mov dx, si
+	jmp .loop
 
-.finish:
-	pop ax
-	mov [.elementLocations], ax
+.toggleQuote:
+	mov bl, byte [.inQuotes]
+	cmp bl, 0
+	je .startQuote
 
-	mov ax, .elementLocations
+.endQuote:
+	mov byte [.inQuotes], 0
+	jmp .loop
+
+.startQuote:
+	mov byte [.inQuotes], 1
+	jmp .loop
+
+.fill:
+	mov ax, .argv
+	stosb
+	inc cx
+	jmp .reallyDone
+
+.done:
+	mov [.argc], cx
+.reallyDone:
+	cmp cx, 256
+	jl .fill
+	mov ax, .argc
 	pop si
 	pop di
 	pop bp
 	ret
 
-	.elementLocations times 4 dw 0
+	.inQuotes		db 0
+	.argc			dw 0
+	.argv			times 256 dw 0
 
 ; ------------------------------------------------------------------
 ; unsigned short stringToInt(unsigned short stringToConvert) -- Convert decimal string to integer value

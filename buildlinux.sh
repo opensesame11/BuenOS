@@ -6,6 +6,10 @@ if test "`whoami`" != "root" ; then
 	exit
 fi
 
+if [ ! -e image ]
+then
+	mkdir image
+fi
 
 if [ ! -e image/BuenOS.flp ]
 then
@@ -29,6 +33,16 @@ cd ..
 
 ld86 -d -o kernel.bin kernel.o ./api/*.o || exit
 
+echo "Compiling programs..."
+
+cd programs
+rm -f *.bin
+for i in *.asm
+do
+	nasm -O0 -f bin $i -o ${i%.*}.bin
+done
+cd ..
+
 rm -f *.o
 cd api
 rm -f *.o
@@ -43,9 +57,12 @@ echo "Copying BuenOS kernel and programs..."
 
 rm -rf tmp-loop
 
-mkdir tmp-loop && mount -o loop -t vfat image/BuenOS.flp tmp-loop && cp kernel.bin tmp-loop/
+mkdir tmp-loop && mount -o loop -t vfat image/BuenOS.flp tmp-loop
 
+rm -f tmp-loop/*.*
+cp kernel.bin tmp-loop/
 cp programs/*.bin tmp-loop
+cp ./LICENSE.txt tmp-loop/
 
 sleep 0.2
 

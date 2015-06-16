@@ -1,13 +1,13 @@
 BITS 16
-ORG 0A000h
+%INCLUDE 'buenos.api'
+ORG 0x8000
 
-%INCLUDE 'billsapi.inc'
 
 calculator:
+	push string
+	call 0x0ae0:0x0096
+	inc sp
+	inc sp
+	ret
 
-mov si, string
-call os_vga_printstring
-
-ret
-
-string db "This is a program that proves the API is working!", 0
+string db "This is a program that proves the API is working!", 10, 13, 0

@@ -88,7 +88,7 @@ _shutdown:
 	.error_msg db "shutdown() call has failed... I don't even know how :P", 0
 
 ; ------------------------------------------------------------------
-; void restart() -- Restarts the system
+; unsigned int restart() -- Restarts the system
 
 _restart:
 	push bp
@@ -96,8 +96,9 @@ _restart:
 	push di
 	push si
 
-	;Restart call
+	int 19h
 
+	mov ax, 1			; If return value is ANYTHING than the call failed...
 	pop si
 	pop di
 	pop bp
@@ -164,6 +165,27 @@ _pause:
 	.counter_var		dw	0
 	.prev_tick_count	dw	0
 
+; ------------------------------------------------------------------
+; unsigned int runMemory( unsigned int address, parsedString_t args ) -- Executes from address and passes parsed input in the stack
+
+_runMemory:
+	push bp
+	mov bp, sp
+	push di
+	push si
+
+	mov ax, [bp+4]
+	push ax
+	mov ax, [bp+6]
+	call ax
+	inc sp
+	inc sp
+
+	pop si
+	pop di
+	pop bp
+	ret
+
 
 ; ------------------------------------------------------------------
 ; void fatalError(short msgAddr) -- Display error message and halt execution
@@ -178,10 +200,23 @@ _fatalError:
 	call _vgaSetup
 	inc sp
 	inc sp
+
 	mov ax, [bp+4]
 	push ax
 	call _vgaPrintString
 	inc sp
 	inc sp
-	jmp $	;halt OS
+
+	mov ax, .append
+	push ax
+	call _vgaPrintString
+	inc sp
+	inc sp
+
+	call _waitKey
+
+	call _restart
+	jmp $
+
+	.append		db 10, 13, "Press any key to restart...", 10, 13, 0
 

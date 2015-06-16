@@ -7,8 +7,6 @@
 ; application api calls
 ; =====================
 
-jmp kernel ; Make sure when OS starts it goes to the kernel
-
 ;======DISK======
 
 jmp _getFileList
@@ -56,6 +54,8 @@ jmp _restart
 global _restart
 jmp _pause
 global _pause
+jmp _runMemory
+global _runMemory
 jmp _fatalError
 global _fatalError
 

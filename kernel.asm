@@ -6,7 +6,7 @@ _main:
 
 %include "api/globaldefinitions.asm"
 %DEFINE API_VERSION 1
-%DEFINE OS_VERSION "Barebones 1"
+%DEFINE OS_VERSION "Barebones 3"
 
 disk_buffer equ 6000h
 
@@ -18,6 +18,7 @@ disk_buffer equ 6000h
 %include "api/string.asm" ;String manipulation lib
 %include "api/display.asm" ;Display configuration and output (WIP)
 %include "api/sound.asm" ;Sound configuration and output (WIP)
+%include "api/pci.asm" ;PCI Config, read/write lib (WIP)
 
 kernel:
 	cli
@@ -28,7 +29,7 @@ kernel:
 	sti
 
 	cld
-	mov ax, 2000h
+	mov ax, 0ae0h
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
@@ -95,4 +96,3 @@ os_version_msg	db "BuenOS version ", OS_VERSION, 10, 13
 		db "you are free to change and redistribute it.", 10, 13
 		db "There is NO WARRANTY, to the "
 		db "extent permitted by law.", 10, 13, 10, 0
-

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-qemu-system-i386 -fda image/BuenOS.flp
+qemu-system-i386 -fda image/BuenOS.flp -monitor stdio

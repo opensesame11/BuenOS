@@ -147,14 +147,13 @@ _getFileList:
 
 
 ; ------------------------------------------------------------------
-; unsigned short loadFile(unsigned short filename, unsigned short location) -- Load file into RAM
+; loadFile_t* loadFile( String filename, unsigned int address ); -- Loads filename into address
 
 _loadFile:
 	push bp
 	mov bp, sp
 	push di
 	push si
-	pusha
 
 	mov ax, [bp+6]
 	mov cx, [bp+4]
@@ -163,6 +162,7 @@ _loadFile:
 	call _stringUppercase
 	inc sp
 	inc sp
+
 	call int_filename_convert
 
 	mov [.filename_loc], ax		; Store filename location
@@ -174,6 +174,7 @@ _loadFile:
 	jnc .floppy_ok			; Did the floppy reset OK?
 
 	mov ax, .err_msg_floppy_reset	; If not, bail out
+	push ax
 	jmp _fatalError
 
 
@@ -233,7 +234,8 @@ _loadFile:
 
 	mov byte [di+11], 0		; Add a terminator to directory name entry
 
-	push di				; Convert root buffer name to upper case
+	mov ax, di			; Convert root buffer name to upper case
+	push ax
 	call _stringUppercase
 	inc sp
 	inc sp
@@ -252,13 +254,9 @@ _loadFile:
 	loop .next_root_entry
 
 .root_problem:
-	mov [.success], word 0		; Set failure int
-	mov ax, .success
-	popa
-	pop si
-	pop di
-	pop bp
-	ret
+	mov bx, 0			; If file not found or major disk error,
+	stc				; return with size = 0 and carry set
+	jmp .return
 
 
 .found_file_to_load:			; Now fetch cluster and load FAT into RAM
@@ -321,6 +319,7 @@ _loadFile:
 	jnc .load_file_sector
 
 	mov ax, .err_msg_floppy_reset	; Reset failed, bail out
+	push ax
 	jmp _fatalError
 
 
@@ -357,12 +356,21 @@ _loadFile:
 
 
 .end:
-	popa
+	mov bx, [.file_size]		; Get file size to pass back in BX
+	clc				; Carry clear = good load
+.return:
+	jnc .badLoad
+	mov word [.failure], 0
+	jmp .goodLoad
+.badLoad:
+	mov word [.failure], 1
+.goodLoad:
+	mov ax, .file_size
 	pop si
 	pop di
 	pop bp
-	mov ax, .success		; Pass the success and size struct
 	ret
+
 
 	.bootd		db 0 		; Boot device number
 	.cluster	dw 0 		; Cluster of the file we want to load
@@ -370,12 +378,12 @@ _loadFile:
 
 	.filename_loc	dw 0		; Temporary store of filename location
 	.load_position	dw 0		; Where we'll load the file
-	.success	dw 0		; Whether or not the load was successful
 	.file_size	dw 0		; Size of the file
+	.failure	dw 0		; Failure status
 
 	.string_buff	times 12 db 0	; For size (integer) printing
 
-	.err_msg_floppy_reset	db '_loadFile: Floppy failed to reset', 0
+	.err_msg_floppy_reset	db 'os_load_file: Floppy failed to reset', 0
 
 
 ; --------------------------------------------------------------------------
@@ -384,17 +392,16 @@ _loadFile:
 _writeFile:
 	push bp
 	mov bp, sp
-	push si
 	push di
+	push si
 
-	mov ax, [bp+8]
-	mov bx, [bp+6]
+	mov ax, [bp+6]
 	mov cx, [bp+4]
 
 	pusha
 
 	mov si, ax
-	push ax
+	push si
 	call _stringLength
 	inc sp
 	inc sp
@@ -406,7 +413,6 @@ _writeFile:
 	call _stringUppercase
 	inc sp
 	inc sp
-
 	call int_filename_convert	; Make filename FAT12-style
 	jc near .failure
 
@@ -418,7 +424,8 @@ _writeFile:
 	call _fileExists		; Don't overwrite a file if it exists!
 	inc sp
 	inc sp
-	jnc near .failure
+
+	jz near .failure
 
 
 	; First, zero out the .free_clusters list from any previous execution
@@ -457,7 +464,8 @@ _writeFile:
 	call _createFile		; Create empty root dir entry for this file
 	inc sp
 	inc sp
-	jc near .failure		; If we can't write to the media, jump out
+
+	jnz near .failure		; If we can't write to the media, jump out
 
 	mov word bx, [.filesize]
 	cmp bx, 0
@@ -679,18 +687,18 @@ _writeFile:
 
 .finished:
 	popa
-	mov ax, 0
 	pop si
 	pop di
 	pop bp
+	mov ax, 0
 	ret
 
 .failure:
 	popa
-	mov ax, 1
 	pop si
 	pop di
 	pop bp
+	mov ax, 1
 	ret
 
 
@@ -704,7 +712,6 @@ _writeFile:
 	.filename	dw 0
 
 	.free_clusters	times 128 dw 0
-
 
 ; --------------------------------------------------------------------------
 ; unsigned short fileExists(unsigned short filename) -- Check for presence of file on the floppy

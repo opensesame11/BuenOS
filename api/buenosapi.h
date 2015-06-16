@@ -2,26 +2,20 @@
 #define __AS386_16__
 #endif
 #ifndef BUENOSAPI
+#define BUENOSAPI
 
 typedef void* String;
 typedef char bcd;
 
 typedef struct{
-	unsigned int success;
-	unsigned int fileSize;
-} loadFile_t;
+	unsigned int argc;
+	String argv[256];
+} parsedString_t;
 
 typedef struct{
 	unsigned int x;
 	unsigned int y;
 } cursorPos_t;
-
-typedef struct{
-	String* arg1;
-	String* arg2;
-	String* arg3;
-	String* arg4;
-} parsedString_t;
 
 
 void vgaSetup(char mode);
@@ -38,13 +32,12 @@ void pause(unsigned int time);
 unsigned int getAPIVersion();
 String getOSVersion();
 void fatalError(String errorMsg);
-shutdown();
-	//---- TODO ----//
-//void restart();
+void shutdown();
+void restart();
 
 void getFileList(String* fileList);
-unsigned int loadFile(String filename, unsigned int destAddress);
-unsigned int writeFile(String filename, unsigned int srcAddress, unsigned int size);//returns 0 on success
+unsigned int loadFile( String filename, unsigned int address );//returns file size (0 is failure)
+unsigned int writeFile(String filename, unsigned int address, unsigned int size);
 unsigned int fileExists(String filename);
 unsigned int createFile(String filename);
 unsigned int removeFile(String filename);
