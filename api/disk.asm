@@ -147,7 +147,9 @@ _getFileList:
 
 
 ; ------------------------------------------------------------------
-; loadFile_t* loadFile( String filename, unsigned int address ); -- Loads filename into address
+; unsigned int loadFile( String filename, unsigned int address ); -- Loads filename into address
+; IN: AX = location of filename, CX = location in RAM to load file
+; OUT: BX = file size (in bytes), carry set if file not found
 
 _loadFile:
 	push bp
@@ -155,18 +157,17 @@ _loadFile:
 	push di
 	push si
 
-	mov ax, [bp+6]
-	mov cx, [bp+4]
+	mov ax, [bp+4]
+	mov cx, [bp+6]
+
+	mov [.filename_loc], ax		; Store filename location
+	mov [.load_position], cx	; And where to load the file!
 
 	push ax
 	call _stringUppercase
 	inc sp
 	inc sp
-
 	call int_filename_convert
-
-	mov [.filename_loc], ax		; Store filename location
-	mov [.load_position], cx	; And where to load the file!
 
 	mov eax, 0			; Needed for some older BIOSes
 
@@ -175,7 +176,7 @@ _loadFile:
 
 	mov ax, .err_msg_floppy_reset	; If not, bail out
 	push ax
-	jmp _fatalError
+	call _fatalError
 
 
 .floppy_ok:				; Ready to read first block of data
@@ -242,8 +243,8 @@ _loadFile:
 
 	mov si, [.filename_loc]		; DS:SI = location of filename to load
 
-	push si
 	push di
+	push si
 	call _stringEqual		; Current entry same as requested?
 	inc sp
 	inc sp
@@ -256,7 +257,7 @@ _loadFile:
 .root_problem:
 	mov bx, 0			; If file not found or major disk error,
 	stc				; return with size = 0 and carry set
-	jmp .return
+	jmp .endFinal
 
 
 .found_file_to_load:			; Now fetch cluster and load FAT into RAM
@@ -316,11 +317,11 @@ _loadFile:
 	jnc .calculate_next_cluster	; If there's no error...
 
 	call disk_reset_floppy		; Otherwise, reset floppy and retry
-	jnc .load_file_sector
+	jc .load_file_sector
 
 	mov ax, .err_msg_floppy_reset	; Reset failed, bail out
 	push ax
-	jmp _fatalError
+	call _fatalError
 
 
 .calculate_next_cluster:
@@ -358,14 +359,7 @@ _loadFile:
 .end:
 	mov bx, [.file_size]		; Get file size to pass back in BX
 	clc				; Carry clear = good load
-.return:
-	jnc .badLoad
-	mov word [.failure], 0
-	jmp .goodLoad
-.badLoad:
-	mov word [.failure], 1
-.goodLoad:
-	mov ax, .file_size
+.endFinal:
 	pop si
 	pop di
 	pop bp
@@ -379,11 +373,11 @@ _loadFile:
 	.filename_loc	dw 0		; Temporary store of filename location
 	.load_position	dw 0		; Where we'll load the file
 	.file_size	dw 0		; Size of the file
-	.failure	dw 0		; Failure status
 
 	.string_buff	times 12 db 0	; For size (integer) printing
 
-	.err_msg_floppy_reset	db 'os_load_file: Floppy failed to reset', 0
+	.err_msg_floppy_reset	db 'loadFile(): Floppy failed to reset', 0
+
 
 
 ; --------------------------------------------------------------------------
@@ -1010,8 +1004,8 @@ _renameFile:
 	push di
 	push si
 
-	mov ax, [bp+6]
-	mov bx, [bp+4]
+	mov ax, [bp+4]
+	mov bx, [bp+6]
 
 	push bx
 	push ax

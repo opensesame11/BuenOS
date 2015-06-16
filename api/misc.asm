@@ -174,9 +174,9 @@ _runMemory:
 	push di
 	push si
 
-	mov ax, [bp+4]
-	push ax
 	mov ax, [bp+6]
+	push ax
+	mov ax, [bp+4]
 	call ax
 	inc sp
 	inc sp
@@ -185,7 +185,6 @@ _runMemory:
 	pop di
 	pop bp
 	ret
-
 
 ; ------------------------------------------------------------------
 ; void fatalError(short msgAddr) -- Display error message and halt execution

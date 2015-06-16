@@ -1,7 +1,7 @@
 #include "buenosapi.h"
 #define sizeOfBuffer 71 //80 - 1 for cursor - 8 for prompt text = 71
 
-char helpString[] = "List of commands:\r\n  HELP -- Prints this message\r\n  CLEAR -- Clear's screen buffer\r\n  VERSION -- Prints BuenOS version and licensing information\r\n  ECHO -- Prints next argument to command line\r\n  DIR -- Lists files in root directory\r\n  SIZEOF -- Prints size of file in bytes\r\n  SHUTDOWN -- Sends an APM shutdown signal\r\n  RESTART -- Sends a non-APM reboot signal\r\n";
+char helpString[] = "List of commands:\r\n  HELP -- Prints this message\r\n  CLEAR -- Clear's screen buffer\r\n  VERSION -- Prints BuenOS version and licensing information\r\n  ECHO -- Prints next argument to command line\r\n  DIR -- Lists files in root directory\r\n  SIZEOF -- Prints size of file in bytes\r\n  RENAME -- Renames first argument to second argument\r\n  SHUTDOWN -- Sends an APM shutdown signal\r\n  RESTART -- Sends a non-APM reboot signal\r\n";
 char inputKey;
 char inputBuffer[sizeOfBuffer + 1];//extra character for null
 unsigned int counter;
@@ -86,6 +86,32 @@ void commandLine(){
 				vgaPrintString( intToString( getFileSize( stringParseInfo->argv[1] ) ) );
 				vgaPrintString( "\r\n" );
 			}
+			else if( stringEqual( stringParseInfo->argv[0], "RENAME" ) ){
+				stringUppercase( stringParseInfo->argv[1] );
+				stringUppercase( stringParseInfo->argv[2] );
+				if( fileExists( stringParseInfo->argv[1] ) && stringLength( stringParseInfo->argv[1] ) != 0 && stringLength( stringParseInfo->argv[2] ) != 0 ){
+					if( stringEqual( stringParseInfo->argv[1], "KERNEL.BIN" ) ) vgaPrintString( "Nice try.\r\n" );
+					else if( renameFile( stringParseInfo->argv[1], stringParseInfo->argv[2] ) ){
+						vgaPrintString( "File " );
+						vgaPrintString( stringParseInfo->argv[1] );
+						vgaPrintString( " could not be renamed to " );
+						vgaPrintString( stringParseInfo->argv[2] );
+						vgaPrintString( "\r\n" );
+					}
+					else{
+						vgaPrintString( "File " );
+						vgaPrintString( stringParseInfo->argv[1] );
+						vgaPrintString( " successfully renamed to " );
+						vgaPrintString( stringParseInfo->argv[2] );
+						vgaPrintString( "\r\n" );
+					}
+				}
+				else{
+					vgaPrintString( "File " );
+					vgaPrintString( stringParseInfo->argv[1] );
+					vgaPrintString( " cannot be found.\r\n" );
+				}
+			}
 			else if( stringEqual( stringParseInfo->argv[0], "SHUTDOWN" ) )  shutdown();
 			else if( stringEqual( stringParseInfo->argv[0], "RESTART" ) )  restart();
 			else runApplication( stringParseInfo );
@@ -97,6 +123,8 @@ void runApplication( parsedString_t* arguments ){
 	if( stringEqual( arguments->argv[0], "KERNEL.BIN" ) ) vgaPrintString( "Stop trying to execute KERNEL.BIN! It's NOT FUNNY!\r\n" );
 	else if( fileExists( arguments->argv[0] ) ){
 		temp = loadFile( arguments->argv[0], 0x8000 );
+		vgaPrintString( intToString( temp ) );
+		pause(18);
 		if( temp != 0 ){
 			runMemory( 0x8000, arguments );
 		}
