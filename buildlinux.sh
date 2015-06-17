@@ -27,7 +27,7 @@ nasm -O0 -f as86 -o kernel.o kernel.asm || exit
 cd api
 for i in *.c
 do
-	bcc -c -ansi $i || exit
+	bcc -0 -c -ansi $i || exit
 done
 cd ..
 
@@ -40,6 +40,10 @@ rm -f *.bin
 for i in *.asm
 do
 	nasm -O0 -f bin $i -o ${i%.*}.bin
+done
+for i in *.c
+do
+	bcc -i -0 -ansi $i -o ${i%.*}.bin
 done
 cd ..
 
@@ -61,7 +65,7 @@ mkdir tmp-loop && mount -o loop -t vfat image/BuenOS.flp tmp-loop
 
 rm -f tmp-loop/*.*
 cp kernel.bin tmp-loop/
-cp programs/*.bin tmp-loop
+cp programs/*.bin tmp-loop/
 cp ./LICENSE.txt tmp-loop/
 
 sleep 0.2

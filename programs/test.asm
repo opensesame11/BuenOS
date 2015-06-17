@@ -1,15 +1,15 @@
 BITS 16
-%INCLUDE 'buenos.api'
+%INCLUDE 'buenosapi.inc'
 ORG 0x8000
 
 
-calculator:
+test:
 	push bp
 	mov bp, sp
 	push di
 	push si
 	push .string
-	call 0x0099
+	call _vgaPrintString	;0x0099
 	inc sp
 	inc sp
 	pop si
