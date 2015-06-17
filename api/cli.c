@@ -1,7 +1,7 @@
 #include "buenosapi.h"
 #define sizeOfBuffer 71 //80 - 1 for cursor - 8 for prompt text = 71
 
-char helpString[] = "List of commands:\r\n  HELP -- Prints this message\r\n  CLEAR -- Clear's screen buffer\r\n  VERSION -- Prints BuenOS version and licensing information\r\n  ECHO -- Prints next argument to command line\r\n  DIR -- Lists files in root directory\r\n  SIZEOF -- Prints size of file in bytes\r\n  RENAME -- Renames first argument to second argument\r\n  SHUTDOWN -- Sends an APM shutdown signal\r\n  RESTART -- Sends a non-APM reboot signal\r\n";
+char helpString[] = "List of commands:\r\n  HELP -- Prints this message\r\n  CLEAR -- Clear's screen buffer\r\n  VERSION -- Prints BuenOS version and licensing information\r\n  ECHO -- Prints next argument to command line\r\n  DIR -- Lists files in root directory\r\n  SIZEOF -- Prints size of file in bytes\r\n  RENAME -- Renames first argument to second argument\r\n  DELETE -- Deletes specified file\r\n  SHUTDOWN -- Sends an APM shutdown signal\r\n  RESTART -- Sends a non-APM reboot signal\r\n";
 char inputKey;
 char inputBuffer[sizeOfBuffer + 1];//extra character for null
 unsigned int counter;
@@ -34,9 +34,12 @@ void commandLine(){
 
 			if( isInput( inputKey ) ){
 				if( inputKey == 27 ){//esc
+					cursorPos = vgaGetPos();
+					vgaSetPos( ( cursorPos->x - counter ), cursorPos->y );
 					for( temp = 0; temp < counter; temp++){
-						vgaPrintString( "\b \b" );
+						vgaPrint( ' ' );
 					}
+					vgaSetPos( ( cursorPos->x - counter ), cursorPos->y );
 					counter = 0;
 					inputBuffer[counter] = 0;
 				}
@@ -79,19 +82,28 @@ void commandLine(){
 			}
 			else if( stringEqual( stringParseInfo->argv[0], "DIR" ) ){
 				getFileList( tempBuffer );
-				vgaPrintString( tempBuffer );
-				vgaPrintString( "\r\n" );
+				stringFindAndReplace( tempBuffer, ',', ' ' );
+				stringParseInfo = stringParse( tempBuffer );
+				temp = 0;
+				while( temp <= stringParseInfo->argc ){
+					vgaPrintString( stringParseInfo->argv[temp] );
+					cursorPos = vgaGetPos();
+					vgaSetPos( 12, cursorPos->y );
+					vgaPrintString( intToString( getFileSize( stringParseInfo->argv[temp] ) ) );
+					vgaPrintString( " bytes\r\n" );
+					temp++;
+				}
 			}
 			else if( stringEqual( stringParseInfo->argv[0], "SIZEOF" ) ){
 				vgaPrintString( intToString( getFileSize( stringParseInfo->argv[1] ) ) );
-				vgaPrintString( "\r\n" );
+				vgaPrintString( " bytes\r\n" );
 			}
 			else if( stringEqual( stringParseInfo->argv[0], "RENAME" ) ){
 				stringUppercase( stringParseInfo->argv[1] );
 				stringUppercase( stringParseInfo->argv[2] );
 				if( fileExists( stringParseInfo->argv[1] ) && stringLength( stringParseInfo->argv[1] ) != 0 && stringLength( stringParseInfo->argv[2] ) != 0 ){
 					if( stringEqual( stringParseInfo->argv[1], "KERNEL.BIN" ) ) vgaPrintString( "Nice try.\r\n" );
-					else if( renameFile( stringParseInfo->argv[1], stringParseInfo->argv[2] ) ){
+					else if( fileExists( stringParseInfo->argv[2] ) || renameFile( stringParseInfo->argv[1], stringParseInfo->argv[2] ) ){
 						vgaPrintString( "File " );
 						vgaPrintString( stringParseInfo->argv[1] );
 						vgaPrintString( " could not be renamed to " );
@@ -110,6 +122,24 @@ void commandLine(){
 					vgaPrintString( "File " );
 					vgaPrintString( stringParseInfo->argv[1] );
 					vgaPrintString( " cannot be found.\r\n" );
+				}
+			}
+			else if( stringEqual( stringParseInfo->argv[0], "DELETE" ) ){
+				stringUppercase( stringParseInfo->argv[1] );
+				if( fileExists( stringParseInfo->argv[1] ) && stringLength( stringParseInfo->argv[1] ) != 0 ){
+					if( stringEqual( stringParseInfo->argv[1], "KERNEL.BIN" ) != 1 ){
+						if( removeFile( stringParseInfo->argv[1] ) ){
+							vgaPrintString( "File " );
+							vgaPrintString( stringParseInfo->argv[1] );
+							vgaPrintString( " could not be deleted\r\n" );
+						}
+						else{
+							vgaPrintString( "File " );
+							vgaPrintString( stringParseInfo->argv[1] );
+							vgaPrintString( " successfully deleted\r\n" );
+						}
+					}
+					else vgaPrintString( "OMG just stop it. I NEED THAT!\r\n\nIT'S NOT FUNNY! ARGH!\r\n\n\n" );
 				}
 			}
 			else if( stringEqual( stringParseInfo->argv[0], "SHUTDOWN" ) )  shutdown();
