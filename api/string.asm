@@ -142,9 +142,9 @@ _stringFindAndReplace:
 	push si
 	pusha
 
-	mov si, [bp+8]
+	mov si, [bp+4]
 	mov ax, [bp+6]
-	mov bx, [bp+4]
+	mov bx, [bp+8]
 
 	mov cl, al
 
