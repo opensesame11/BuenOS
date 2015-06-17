@@ -81,13 +81,10 @@ _vgaGetPos:
 	mov bh, 0
 	int 10h
 
-	mov ax, dx
-	xor ax, 00FFh
-	mov bx, dx
-	shr bx, 4
+	xor cx, cx
 
-	mov [.x], ax
-	mov [.y], bx
+	mov [.x], dl
+	mov [.y], dh
 
 	popa
 	pop si
@@ -96,8 +93,8 @@ _vgaGetPos:
 	mov ax, .x
 	ret
 
-	.x dw 0
-	.y dw 0
+	.x db 0
+	.y db 0
 
 
 ; ------------------------------------------------------------------

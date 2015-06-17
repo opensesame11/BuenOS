@@ -13,8 +13,8 @@ typedef struct{
 } parsedString_t;
 
 typedef struct{
-	unsigned int x;
-	unsigned int y;
+	char x;
+	char y;
 } cursorPos_t;
 
 
