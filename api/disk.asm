@@ -382,7 +382,7 @@ _loadFile:
 
 
 ; --------------------------------------------------------------------------
-; unsigned short writeFile(unsigned short filename, unsigned short location, unsigned short size) -- Save (max 64K) file to disk
+; unsigned int writeFile(String filename, unsigned int location, unsigned int size) -- Save (max 64K) file to disk
 
 _writeFile:
 	push bp
@@ -390,10 +390,11 @@ _writeFile:
 	push di
 	push si
 
-	mov ax, [bp+6]
-	mov cx, [bp+4]
-
 	pusha
+
+	mov ax, [bp+4]
+	mov bx, [bp+6]
+	mov cx, [bp+8]
 
 	mov si, ax
 	push si
@@ -419,9 +420,8 @@ _writeFile:
 	call _fileExists		; Don't overwrite a file if it exists!
 	inc sp
 	inc sp
-
-	jz near .failure
-
+	cmp ax, 1
+	je near .failure
 
 	; First, zero out the .free_clusters list from any previous execution
 	pusha
@@ -457,10 +457,8 @@ _writeFile:
 
 	push ax
 	call _createFile		; Create empty root dir entry for this file
-	inc sp
-	inc sp
-
-	jnz near .failure		; If we can't write to the media, jump out
+	cmp ax, 1
+	je near .failure		; If we can't write to the media, jump out
 
 	mov word bx, [.filesize]
 	cmp bx, 0
@@ -682,17 +680,11 @@ _writeFile:
 
 .finished:
 	popa
-	pop si
-	pop di
-	pop bp
 	mov ax, 0
 	ret
 
 .failure:
 	popa
-	pop si
-	pop di
-	pop bp
 	mov ax, 1
 	ret
 

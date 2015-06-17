@@ -4,10 +4,17 @@ ORG 0x8000
 
 
 calculator:
-	push string
-	call 0x0ae0:0x0096
+	push bp
+	mov bp, sp
+	push di
+	push si
+	push .string
+	call 0x0099
 	inc sp
 	inc sp
+	pop si
+	pop di
+	pop bp
 	ret
 
-string db "This is a program that proves the API is working!", 10, 13, 0
+.string db "This is a program that proves the API is working!", 10, 13, 0
