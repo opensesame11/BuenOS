@@ -153,12 +153,10 @@ void runApplication( parsedString_t* arguments ){
 	if( stringEqual( arguments->argv[0], "KERNEL.BIN" ) ) vgaPrintString( "Stop trying to execute KERNEL.BIN! It's NOT FUNNY!\r\n" );
 	else if( fileExists( arguments->argv[0] ) ){
 		temp = loadFile( arguments->argv[0], 0x8000 );
-		vgaPrintString( intToString( temp ) );
-		pause(18);
 		if( temp != 0 ){
 			runMemory( 0x8000, arguments );
 		}
-		else vgaPrintString( "File did not load correctly into memory.\r\n" );
+		else vgaPrintString( "File is empty or failed to load\r\n" );
 	}
 	else{
 		vgaPrintString( "File " );

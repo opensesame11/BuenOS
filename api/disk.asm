@@ -147,7 +147,7 @@ _getFileList:
 
 
 ; ------------------------------------------------------------------
-; unsigned int loadFile( String filename, unsigned int address ); -- Loads filename into address
+; os_load_file -- Load file into RAM
 ; IN: AX = location of filename, CX = location in RAM to load file
 ; OUT: BX = file size (in bytes), carry set if file not found
 
@@ -160,14 +160,14 @@ _loadFile:
 	mov ax, [bp+4]
 	mov cx, [bp+6]
 
-	mov [.filename_loc], ax		; Store filename location
-	mov [.load_position], cx	; And where to load the file!
-
 	push ax
 	call _stringUppercase
 	inc sp
 	inc sp
 	call int_filename_convert
+
+	mov [.filename_loc], ax		; Store filename location
+	mov [.load_position], cx	; And where to load the file!
 
 	mov eax, 0			; Needed for some older BIOSes
 
@@ -250,14 +250,17 @@ _loadFile:
 	inc sp
 	inc sp
 	inc sp
-	jnz .found_file_to_load
+	cmp ax, 1
+	je .found_file_to_load
 
 	loop .next_root_entry
 
 .root_problem:
-	mov bx, 0			; If file not found or major disk error,
-	stc				; return with size = 0 and carry set
-	jmp .endFinal
+	mov ax, 0
+	pop si
+	pop di
+	pop bp
+	ret
 
 
 .found_file_to_load:			; Now fetch cluster and load FAT into RAM
@@ -317,7 +320,7 @@ _loadFile:
 	jnc .calculate_next_cluster	; If there's no error...
 
 	call disk_reset_floppy		; Otherwise, reset floppy and retry
-	jc .load_file_sector
+	jnc .load_file_sector
 
 	mov ax, .err_msg_floppy_reset	; Reset failed, bail out
 	push ax
@@ -357,9 +360,7 @@ _loadFile:
 
 
 .end:
-	mov bx, [.file_size]		; Get file size to pass back in BX
-	clc				; Carry clear = good load
-.endFinal:
+	mov ax, [.file_size]		; Get file size to pass back in ax
 	pop si
 	pop di
 	pop bp
@@ -376,7 +377,7 @@ _loadFile:
 
 	.string_buff	times 12 db 0	; For size (integer) printing
 
-	.err_msg_floppy_reset	db 'loadFile(): Floppy failed to reset', 0
+	.err_msg_floppy_reset	db 'os_load_file: Floppy failed to reset', 0
 
 
 
