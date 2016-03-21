@@ -1,7 +1,17 @@
 #include "buenosapi.h"
 #define sizeOfBuffer 71 //80 - 1 for cursor - 8 for prompt text = 71
 
-char helpString[] = "List of commands:\r\n  HELP -- Prints this message\r\n  CLEAR -- Clear's screen buffer\r\n  VERSION -- Prints BuenOS version and licensing information\r\n  ECHO -- Prints next argument to command line\r\n  DIR -- Lists files in root directory\r\n  SIZEOF -- Prints size of file in bytes\r\n  RENAME -- Renames first argument to second argument\r\n  DELETE -- Deletes specified file\r\n  SHUTDOWN -- Sends an APM shutdown signal\r\n  RESTART -- Sends a non-APM reboot signal\r\n";
+char helpString[] = 	"List of commands:\r\n"\
+			"  HELP -- Prints this message\r\n"\
+			"  CLEAR -- Clear's screen buffer\r\n"\
+			"  VERSION -- Prints BuenOS version and licensing information\r\n"\
+			"  ECHO -- Prints next argument to command line\r\n"\
+			"  DIR -- Lists files in root directory\r\n"\
+			"  SIZEOF -- Prints size of file in bytes\r\n"\
+			"  RENAME -- Renames first argument to second argument\r\n"\
+			"  DELETE -- Deletes specified file\r\n"\
+			"  SHUTDOWN -- Sends an APM shutdown signal\r\n"\
+			"  RESTART -- Sends a non-APM reboot signal\r\n";
 char inputKey;
 char inputBuffer[sizeOfBuffer + 1];//extra character for null
 unsigned int counter;
@@ -69,6 +79,7 @@ void commandLine(){
 		}
 		stringCopy( inputBuffer, tempBuffer );
 		stringParseInfo = stringParse( tempBuffer );
+		stringParseInfo->argc++;
 		stringUppercase( stringParseInfo->argv[0] );
 
 		if( stringLength( stringParseInfo->argv[0] ) != 0 ){
@@ -149,6 +160,7 @@ void commandLine(){
 	}
 }
 
+int numcnt;
 void runApplication( parsedString_t* arguments ){
 	if( stringEqual( arguments->argv[0], "KERNEL.BIN" ) ) vgaPrintString( "Stop trying to execute KERNEL.BIN! It's NOT FUNNY!\r\n" );
 	else if( fileExists( arguments->argv[0] ) ){

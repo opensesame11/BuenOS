@@ -6,7 +6,7 @@
 ; ==================================================================
 
 ; ------------------------------------------------------------------
-; unsigned short getAPIVersion() -- Return current version of BuenOS API
+; unsigned int getAPIVersion() -- Return current version of BuenOS API
 
 _getAPIVersion:
 	push bp
@@ -22,7 +22,7 @@ _getAPIVersion:
 
 
 ; ------------------------------------------------------------------
-; void* getOSVersion() -- Return OS Version String
+; String getOSVersion() -- Return OS Version String
 
 _getOSVersion:
 	push bp
@@ -85,7 +85,7 @@ _shutdown:
 	pop bp
 	ret
 
-	.error_msg db "shutdown() call has failed... I don't even know how :P", 0
+	.error_msg db "shutdown() call has failed... I don",39,"t even know how :P", 0
 
 ; ------------------------------------------------------------------
 ; unsigned int restart() -- Restarts the system
@@ -166,7 +166,7 @@ _pause:
 	.prev_tick_count	dw	0
 
 ; ------------------------------------------------------------------
-; unsigned int runMemory( unsigned int address, parsedString_t args ) -- Executes from address and passes parsed input in the stack
+; int runMemory( unsigned int address, parsedString_t *arguments ) -- Executes from address and passes parsed input in the stack
 
 _runMemory:
 	push bp
@@ -175,10 +175,15 @@ _runMemory:
 	push si
 
 	mov bx, [bp+6]
-	mov ax, [bx+2]
+	mov cx, bx
+	add cx, 2
+	mov ax, [bx]
+	push cx
 	push ax
 	mov ax, [bp+4]
 	call ax
+	inc sp
+	inc sp
 	inc sp
 	inc sp
 

@@ -59,7 +59,7 @@ do
 	echo
 done
 
-#rm -f *.o *.tmp *.bcc
+rm -f *.o *.tmp *.bcc
 cd ..
 rm -f *.o
 cd api

@@ -35,9 +35,10 @@ String getOSVersion();
 void fatalError(String errorMsg);
 void shutdown();
 void restart();
+int runMemory(unsigned int address, parsedString_t *arguments);
 
 void getFileList(String* fileList);
-unsigned int loadFile( String filename, unsigned int address );//returns file size (0 is failure)
+unsigned int loadFile(String filename, unsigned int address);//returns file size (0 is failure)
 unsigned int writeFile(String filename, unsigned int address, unsigned int size);
 unsigned int fileExists(String filename);
 unsigned int createFile(String filename);

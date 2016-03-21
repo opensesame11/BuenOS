@@ -90,7 +90,7 @@ bootscreen 	db "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
 os_version	db OS_VERSION
 
 os_version_msg	db "BuenOS version ", OS_VERSION, 10, 13
-		db "Copyright (C) 2015 BuenOS Team", 10, 13
+		db "Copyright (C) 2015-2016 BuenOS Team", 10, 13
 		db "License: GNU GPLv2 (LICENSE.TXT)", 10, 13
 		db "This is free software; "
 		db "you are free to change and redistribute it.", 10, 13
