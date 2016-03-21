@@ -1,6 +1,7 @@
 #ifndef __AS386_16__
 #define __AS386_16__
 #endif
+
 #ifndef BUENOSAPI
 #define BUENOSAPI
 
@@ -20,7 +21,7 @@ typedef struct{
 
 void vgaSetup(char mode);
 void vgaPrint(char character);
-void (*vgaPrintString)(void string) = 0x0099;
+void vgaPrintString(void string);
 void vgaSetPos(unsigned int x, unsigned int y);
 void vgaSetupCursor(unsigned int attribute);
 cursorPos_t* vgaGetPos();
@@ -78,5 +79,7 @@ unsigned int bcdToInt(bcd value);
 
 char waitKey();
 char getKey();
+
+void __mkargv(){};//stupid bcc makes a global sometimes when compiling C progs. this is apparantly the remedy...
 
 #endif

@@ -1,75 +1,83 @@
+; ================================================================== 
+; BuenOS
+; Copyright (C) 2006 - 2014 MikeOS Developers -- see doc/LICENSE.TXT ; 
+; API LINK INCLUSIONS
+; ==================================================================
+
 ;======DISK======
 
-%define _getFileList 0x0003
-%define _loadFile 0x0006
-%define _writeFile 0x0009
-%define _fileExists 0x000c
-%define _createFile 0x000f
-%define _removeFile 0x0012
-%define _renameFile 0x0015
-%define _getFileSize 0x0018
+extern _getFileList
+extern _loadFile
+extern _writeFile
+extern _fileExists
+extern _createFile
+extern _removeFile
+extern _renameFile
+extern _getFileSize
 
 ;======MATH======
 
-%define _seedRandom 0x001b
-%define _getRandom 0x001e
-%define _bcdToInt 0x0021
+extern _seedRandom
+extern _getRandom
+extern _bcdToInt
 
 ;======KEYBOARD======
 
-%define _waitKey 0x0024
-%define _getKey 0x0027
+extern _waitKey
+extern _getKey
 
 ;======MISC======
 
-%define _getAPIVersion 0x002a
-%define _getOSVersion 0x002d
-%define _shutdown 0x0030
-%define _restart 0x0033
-%define _pause 0x0036
-%define _runMemory 0x0039
-%define _fatalError 0x003c
+extern _getAPIVersion
+extern _getOSVersion
+extern _shutdown
+extern _restart
+extern _pause
+extern _runMemory
+extern _fatalError
 
 ;======PORTS======
 
-%define _portWrite 0x003f
-%define _portRead 0x0042
-%define _serialSetup 0x0045
-%define _serialWrite 0x0048
-%define _serialRead 0x004b
+extern _portWrite
+extern _portRead
+extern _serialSetup
+extern _serialWrite
+extern _serialRead
 
 ;======STRING======
 
-%define _stringLength 0x004e
-%define _stringReverse 0x0051
-%define _stringFindChar 0x0054
-%define _stringFindAndReplace 0x0057
-%define _stringUppercase 0x005a
-%define _stringLowercase 0x005d
-%define _stringCopy 0x0060
-%define _stringTrunctuate 0x0063
-%define _stringJoin 0x0066
-%define _stringChomp 0x0069
-%define _stringStrip 0x006c
-%define _stringEqual 0x006f
-%define _stringParse 0x0072
-%define _stringToInt 0x0075
-%define _intToString 0x0078
-%define _sIntToString 0x007b
-%define _setTimeFMT 0x007e
-%define _getTimeString 0x0081
-%define _setDateFMT 0x0084
-%define _getDateString 0x0087
-%define _stringFindToken 0x008a
+extern _stringLength
+extern _stringReverse
+extern _stringFindChar
+extern _stringFindAndReplace
+extern _stringUppercase
+extern _stringLowercase
+extern _stringCopy
+extern _stringTrunctuate
+extern _stringJoin
+extern _stringChomp
+extern _stringStrip
+extern _stringEqual
+extern _stringParse
+extern _stringToInt
+extern _intToString
+extern _sIntToString
+extern _setTimeFMT
+extern _getTimeString
+extern _setDateFMT
+extern _getDateString
+extern _stringFindToken
 
 ;======DISPLAY======
 
-%define _vgaSetup 0x008d
-%define _vgaGetChar 0x0090
-%define _vgaGetPos 0x0093
-%define _vgaPrint 0x0096
-%define _vgaPrintString 0x0099
-%define _vgaSetPos 0x009c
-%define _vgaSetupCursor 0x009f
+extern _vgaSetup
+extern _vgaGetChar
+extern _vgaGetPos
+extern _vgaPrint
+extern _vgaPrintString
+extern _vgaSetPos
+extern _vgaSetupCursor
 
 ;======SOUND======
+	
+

@@ -6,7 +6,7 @@ _main:
 
 %include "api/globaldefinitions.asm"
 %DEFINE API_VERSION 1
-%DEFINE OS_VERSION "Barebones 3"
+%DEFINE OS_VERSION "Barebones 4"
 
 disk_buffer equ 6000h
 

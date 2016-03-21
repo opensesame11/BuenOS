@@ -174,7 +174,8 @@ _runMemory:
 	push di
 	push si
 
-	mov ax, [bp+6]
+	mov bx, [bp+6]
+	mov ax, [bx+2]
 	push ax
 	mov ax, [bp+4]
 	call ax

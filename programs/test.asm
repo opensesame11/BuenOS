@@ -1,7 +1,9 @@
 BITS 16
 %INCLUDE 'buenosapi.inc'
-ORG 0x8000
-
+section .text
+global _main
+_main:
+times 0x8000 db 0
 
 test:
 	push bp
@@ -17,4 +19,6 @@ test:
 	pop bp
 	ret
 
+
+section .data
 .string db "This is a program that proves the API is working!", 10, 13, 0

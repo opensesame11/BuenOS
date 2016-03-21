@@ -17,11 +17,11 @@ then
 	mkdosfs -C image/BuenOS.flp 1440 || exit
 fi
 
-echo "Compiling bootloader..."
+echo "\nCompiling bootloader..."
 
 nasm -O0 -f bin -o bootload.bin bootload.asm || exit
 
-echo "Compiling kernel..."
+echo "\nCompiling kernel..."
 
 nasm -O0 -f as86 -o kernel.o kernel.asm || exit
 cd api
@@ -33,31 +33,45 @@ cd ..
 
 ld86 -d -o kernel.bin kernel.o ./api/*.o || exit
 
-echo "Compiling programs..."
+echo "\nCompiling programs..."
 
+cp ./api/buenosapi.h ./programs/buenosapi.h
 cd programs
 rm -f *.bin
+nasm -O0 -f as86 -o buenosapi.o buenosapi.l || exit
+echo "buenosapi.l Compiled\n"
 for i in *.asm
 do
-	nasm -O0 -f bin $i -o ${i%.*}.bin
+	nasm -O0 -f as86 $i -o ${i%.*}.o || exit
+	echo "$i Compiled"
+	ld86 -d ${i%.*}.o buenosapi.o -o ${i%.*}.tmp || exit
+	echo "${i%.*}.o and buenosapi.o Linked"
+	dd if=${i%.*}.tmp bs=1024 skip=32 of=${i%.*}.bin || exit
+	echo
 done
 for i in *.c
 do
-	bcc -i -0 -ansi $i -o ${i%.*}.bin
+	bcc -c -ansi $i -o ${i%.*}.o || exit
+	echo "$i Compiled"
+	ld86 -d ${i%.*}.o buenosapi.o -o ${i%.*}.tmp  || exit
+	echo "${i%.*}.o and buenosapi.o Linked"
+	dd if=${i%.*}.tmp bs=1024 skip=32 of=${i%.*}.bin || exit
+	echo
 done
-cd ..
 
+#rm -f *.o *.tmp *.bcc
+cd ..
 rm -f *.o
 cd api
 rm -f *.o
 cd ..
 
-echo "Adding bootloader to floppy image..."
+echo "\nAdding bootloader to floppy image..."
 
 dd status=noxfer conv=notrunc if=./bootload.bin of=./image/BuenOS.flp || exit
 
 
-echo "Copying BuenOS kernel and programs..."
+echo "\nCopying BuenOS kernel and programs..."
 
 rm -rf tmp-loop
 
@@ -74,5 +88,5 @@ umount tmp-loop || exit
 
 rm -rf tmp-loop
 
-echo 'Done!'
+echo '\nDone!'
 

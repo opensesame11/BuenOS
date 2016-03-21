@@ -1,0 +1,42 @@
+Note to self or whoever reads the source code in this folder...
+
+Flat binary cannot be dynamically linked, so I'm using as86
+to link everything together in 16-bit. Problem is - to use as86,
+I cannot use the ORG directive (although native as86 compiler can,
+but I have no idea how that even works....) So as a quick solution,
+every program written must have 0x8000 null bytes after the insertion
+point of the program.
+
+NASM would achieve this with a
+	times 0x8000 db 0
+though ATM (23:41 19/03/2016) I don't know what to do for C. Probably
+an array definition at the beginning of every program. lol
+
+UPDATE: (17:51 20/03/2016) Just made ASM work with the API. Programs
+will now follow the following syntax.
+
+BITS 16
+include 'buenosapi.inc'
+section .text
+global _main
+_main:
+times 0x8000 db 0
+
+*REST OF PROGRAM*
+
+Not too complicated, so that should work fine. Now to make C work....
+
+UPDATE2: (0:43 21/03/2016) Ok so turns out C is a little bit trickier.
+I had to try many strategies, but the current winner involves having
+an empty __mvargv() in every program to make up for a bug in bcc and
+since as86 has no macros for filling part of the source with 0x8000
+bytes, I had to make a header that goes immediately after the main
+declaration. It goes like this:
+
+#include 'buenosapi.h'
+
+int main( int argc, String argv[] ){
+	#include 'orgreplacement.h'
+
+	*REST OF PROGRAM*
+}

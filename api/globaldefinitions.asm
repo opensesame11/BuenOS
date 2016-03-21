@@ -3,7 +3,7 @@
 ;    globalises asm
 ;  portions of the api
 ; for use in C parts of
-;      the api an
+;      the api and
 ; application api calls
 ; =====================
 

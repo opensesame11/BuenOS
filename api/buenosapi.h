@@ -1,6 +1,7 @@
 #ifndef __AS386_16__
 #define __AS386_16__
 #endif
+
 #ifndef BUENOSAPI
 #define BUENOSAPI
 
@@ -78,5 +79,7 @@ unsigned int bcdToInt(bcd value);
 
 char waitKey();
 char getKey();
+
+void __mkargv(){};//stupid bcc makes a global sometimes when compiling C progs. this is apparantly the remedy...
 
 #endif
